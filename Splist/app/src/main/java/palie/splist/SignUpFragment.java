@@ -14,12 +14,15 @@ import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 
 public class SignUpFragment extends Fragment implements View.OnClickListener {
 
-    private String firstName, lastName, email, password;
-    private EditText emailField, passwordField, firstField, lastField;
+    private String name, email, password;
+    private EditText emailField, passwordField, nameField;
     private FirebaseAuth mAuth;
+    private FirebaseDatabase db;
 
     public SignUpFragment() {
         // Required empty public constructor
@@ -32,10 +35,11 @@ public class SignUpFragment extends Fragment implements View.OnClickListener {
         View v = inflater.inflate(R.layout.fragment_sign_up, container, false);
 
         mAuth = FirebaseAuth.getInstance();
+        db = FirebaseDatabase.getInstance();
 
         emailField = (EditText) v.findViewById(R.id.email);
         passwordField = (EditText) v.findViewById(R.id.password);
-        firstField = (EditText) v.findViewById(R.id.first);
+        nameField = (EditText) v.findViewById(R.id.name);
 
         return v;
     }
@@ -48,7 +52,7 @@ public class SignUpFragment extends Fragment implements View.OnClickListener {
                         .beginTransaction().replace(R.id.content, new LoginFragment()).commit();
                 break;
             case R.id.register_button:
-                firstName = firstField.getText().toString();
+                name = nameField.getText().toString();
                 email = emailField.getText().toString();
                 password = passwordField.getText().toString();
                 register(email, password);
@@ -56,7 +60,7 @@ public class SignUpFragment extends Fragment implements View.OnClickListener {
         }
     }
 
-    public void register(String email, String password) {
+    public void register(final String email, String password) {
         mAuth.createUserWithEmailAndPassword(email, password)
                 .addOnCompleteListener(getActivity(), new OnCompleteListener<AuthResult>() {
                     @Override
@@ -64,6 +68,9 @@ public class SignUpFragment extends Fragment implements View.OnClickListener {
                         if (!task.isSuccessful()) {
                             Toast.makeText(getActivity(), "Registration failed", Toast.LENGTH_SHORT).show();
                         } else {
+                            DatabaseReference userRef = db.getReference("Users");
+                            userRef.child(mAuth.getCurrentUser().getUid()).child("name").setValue(name);
+                            userRef.child(mAuth.getCurrentUser().getUid()).child("email").setValue(email);
                             startActivity(new Intent(getActivity(), MainActivity.class));
                         }
                     }

@@ -42,10 +42,12 @@
             android:layout_height="match_parent">
 
             <EditText
-                android:id="@+id/first"
+                android:id="@+id/name"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="First"
+                android:layout_marginLeft="20dp"
+                android:layout_marginRight="20dp"
+                android:hint="Full name"
                 android:inputType="textPersonName"
                 android:singleLine="true" />
         </android.support.design.widget.TextInputLayout>
