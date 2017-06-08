@@ -4,7 +4,7 @@ import java.util.List;
 
 class Group {
 
-    private String name, imageKey;
+    private String name, key;
     private String members;
 //    private List<String> members;
 //
@@ -14,9 +14,9 @@ class Group {
 //        this.members = members;
 //    }
 
-    Group(String name, String imageKey, String members) {
+    Group(String name, String key, String members) {
         this.name = name;
-        this.imageKey = imageKey;
+        this.key = key;
         this.members = members;
     }
 
@@ -26,8 +26,8 @@ class Group {
         return name;
     }
 
-    public String getImageKey() {
-        return imageKey;
+    public String getKey() {
+        return key;
     }
 
     public String getMembers() {

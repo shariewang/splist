@@ -76,8 +76,9 @@
             android:layout_marginBottom="16dp"
             android:layout_marginRight="20dp"
             android:layout_weight="1"
-            android:text="Forgot password?"
-            android:textAlignment="textEnd" />
+            android:text="@string/forgot_password"
+            android:textAlignment="textEnd"
+            android:layout_gravity="end"/>
 
         <Button
             android:id="@+id/sign_in_button"
@@ -95,7 +96,7 @@
             android:id="@+id/register"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Register"
+            android:text="@string/register"
             android:textAlignment="center" />
 
     </LinearLayout>

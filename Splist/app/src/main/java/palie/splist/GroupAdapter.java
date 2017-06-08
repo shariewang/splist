@@ -1,6 +1,8 @@
 package palie.splist;
 
 import android.content.Context;
+import android.content.Intent;
+import android.os.Bundle;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -33,14 +35,14 @@ class GroupAdapter extends RecyclerView.Adapter<GroupAdapter.ViewHolder> {
     public void onBindViewHolder(ViewHolder holder, int position) {
         Group group = mGroups.get(position);
 
-        System.out.println(group.getName());
         holder.groupName.setText(group.getName());
         holder.groupMembers.setText(group.getMembers());
+        holder.groupKey = group.getKey();
 //        Glide.with(mContext)
 //                .using(new FirebaseImageLoader())
 //                .load(FirebaseStorage.getInstance().getReference("groupImages").child(group.getImageKey()))
 //                .into(holder.groupImage);
-        Glide.with(mContext).load(group.getImageKey()).into(holder.groupImage);
+        Glide.with(mContext).load(group.getKey()).into(holder.groupImage);
     }
 
     @Override
@@ -48,10 +50,11 @@ class GroupAdapter extends RecyclerView.Adapter<GroupAdapter.ViewHolder> {
         return mGroups.size();
     }
 
-    static class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
+    class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
 
         ImageView groupImage;
         TextView groupName, groupMembers;
+        String groupKey;
 
         ViewHolder(View v) {
             super(v);
@@ -62,7 +65,13 @@ class GroupAdapter extends RecyclerView.Adapter<GroupAdapter.ViewHolder> {
 
         @Override
         public void onClick(View view) {
-
+            switch(view.getId()) {
+                case R.id.img:
+                    Intent i = new Intent(mContext, GroupActivity.class);
+                    i.putExtra("key", groupKey);
+                    mContext.startActivity(i);
+                    break;
+            }
         }
     }
 }
