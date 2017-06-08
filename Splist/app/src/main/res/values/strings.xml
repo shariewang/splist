@@ -10,4 +10,5 @@
     <!-- Strings related to menus -->
     <string name="sign_out">Sign out</string>
     <string name="new_group">New group</string>
+    <string name="save">SAVE</string>
 </resources>

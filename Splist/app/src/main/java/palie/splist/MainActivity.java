@@ -1,5 +1,6 @@
 package palie.splist;
 
+import android.content.Intent;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -10,6 +11,10 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.ChildEventListener;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.FirebaseDatabase;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -17,19 +22,51 @@ import java.util.List;
 public class MainActivity extends AppCompatActivity {
 
     private List<Group> mGroups;
+    private GroupAdapter groupAdapter;
+    private static FirebaseDatabase db = FirebaseDatabase.getInstance();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        setTitle("My groups");
+
         mGroups = new ArrayList<>();
 
         RecyclerView recyclerView = (RecyclerView) findViewById(R.id.recyclerView);
-        RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(this);
-        recyclerView.setLayoutManager(layoutManager);
-        GroupAdapter groupAdapter = new GroupAdapter(mGroups);
+        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+        groupAdapter = new GroupAdapter(mGroups, getApplicationContext());
         recyclerView.setAdapter(groupAdapter);
+
+        db.getReference("Groups").addChildEventListener(new ChildEventListener() {
+            @Override
+            public void onChildAdded(DataSnapshot dataSnapshot, String s) {
+                Group group = dataSnapshot.getValue(Group.class);
+                mGroups.add(group);
+                groupAdapter.notifyItemInserted(mGroups.size() - 1);
+            }
+
+            @Override
+            public void onChildChanged(DataSnapshot dataSnapshot, String s) {
+
+            }
+
+            @Override
+            public void onChildRemoved(DataSnapshot dataSnapshot) {
+
+            }
+
+            @Override
+            public void onChildMoved(DataSnapshot dataSnapshot, String s) {
+
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
     }
 
     @Override
@@ -43,10 +80,7 @@ public class MainActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.new_group:
-                getSupportFragmentManager().beginTransaction()
-                        .setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN).commit();
-                getSupportFragmentManager().beginTransaction()
-                        .add(R.id.main_content, new NewGroupFragment()).addToBackStack(null).commit();
+                startActivity(new Intent(getApplicationContext(), NewGroupActivity.class));
                 return true;
             case R.id.signOut:
                 FirebaseAuth.getInstance().signOut();
