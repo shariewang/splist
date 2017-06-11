@@ -1,16 +1,20 @@
 package palie.splist;
 
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.CollapsingToolbarLayout;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.ArrayAdapter;
 import android.widget.ImageView;
+import android.widget.Spinner;
 
 import com.bumptech.glide.Glide;
 import com.google.firebase.auth.FirebaseAuth;
@@ -34,13 +38,26 @@ public class GroupActivity extends AppCompatActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         toolbarLayout = (CollapsingToolbarLayout) findViewById(R.id.toolbar_layout);
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         ImageView image = (ImageView) findViewById(R.id.image);
+
+        final AlertDialog dialog = createDialog();
+        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
+        fab.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                dialog.show();
+            }
+        });
+
+        //spinner set up
+
+
+
         //TODO: change
-        Glide.with(getApplicationContext()).load("http://s1.dmcdn.net/Cign-/1280x720-coE.jpg").into(image);
+        Glide.with(this).load("http://s1.dmcdn.net/Cign-/1280x720-coE.jpg").into(image);
 
         key = getIntent().getStringExtra("key");
-        db.getReference("Groups").child(key).child("name").addListenerForSingleValueEvent(new ValueEventListener() {
+        db.getReference("Groups").child("first").child("name").addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 toolbarLayout.setTitle(dataSnapshot.getValue(String.class));
@@ -51,6 +68,35 @@ public class GroupActivity extends AppCompatActivity {
 
             }
         });
+    }
+
+    public AlertDialog createDialog() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(GroupActivity.this);
+        View view = getLayoutInflater().inflate(R.layout.dialog_new_list, null);
+        builder.setView(view)
+                .setPositiveButton("CREATE", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+
+                    }
+                })
+                .setNegativeButton("CANCEL", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+
+                    }
+                });
+        Spinner categorySpinner = (Spinner) view.findViewById(R.id.category);
+        ArrayAdapter<CharSequence> categoryAdapter = ArrayAdapter
+                .createFromResource(this, R.array.list_categories, android.R.layout.simple_spinner_item);
+        categoryAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        categorySpinner.setAdapter(categoryAdapter);
+        Spinner colorSpinner = (Spinner) view.findViewById(R.id.color);
+        ArrayAdapter<CharSequence> colorAdapter = ArrayAdapter
+                .createFromResource(this, R.array.list_colors, android.R.layout.simple_spinner_item);
+        colorAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        colorSpinner.setAdapter(colorAdapter);
+        return builder.create();
     }
 
     @Override

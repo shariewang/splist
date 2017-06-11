@@ -50,7 +50,7 @@ class GroupAdapter extends RecyclerView.Adapter<GroupAdapter.ViewHolder> {
         return mGroups.size();
     }
 
-    class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
+    class ViewHolder extends RecyclerView.ViewHolder {
 
         ImageView groupImage;
         TextView groupName, groupMembers;
@@ -61,17 +61,15 @@ class GroupAdapter extends RecyclerView.Adapter<GroupAdapter.ViewHolder> {
             groupImage = (ImageView) v.findViewById(R.id.img);
             groupName = (TextView) v.findViewById(R.id.name);
             groupMembers = (TextView) v.findViewById(R.id.members);
-        }
-
-        @Override
-        public void onClick(View view) {
-            switch(view.getId()) {
-                case R.id.img:
+            v.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
                     Intent i = new Intent(mContext, GroupActivity.class);
+                    i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                     i.putExtra("key", groupKey);
                     mContext.startActivity(i);
-                    break;
-            }
+                }
+            });
         }
     }
 }

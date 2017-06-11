@@ -28,6 +28,9 @@
             </intent-filter>
         </activity>
         <activity android:name=".NewGroupActivity" />
+        <activity android:name=".GroupActivity"
+            android:theme="@style/AppTheme.NoActionBar">
+        </activity>
     </application>
 
 </manifest>
