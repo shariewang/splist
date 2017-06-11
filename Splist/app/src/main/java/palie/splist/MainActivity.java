@@ -23,7 +23,7 @@ import java.util.List;
 public class MainActivity extends AppCompatActivity {
 
     private List<Group> mGroups;
-    private GroupAdapter groupAdapter;
+    static GroupAdapter groupAdapter;
     private static FirebaseDatabase db = FirebaseDatabase.getInstance();
 
     @Override

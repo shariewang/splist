@@ -11,6 +11,8 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
+import com.firebase.ui.storage.images.FirebaseImageLoader;
+import com.google.firebase.storage.FirebaseStorage;
 
 import java.util.List;
 
@@ -38,11 +40,10 @@ class GroupAdapter extends RecyclerView.Adapter<GroupAdapter.ViewHolder> {
         holder.groupName.setText(group.getName());
         holder.groupMembers.setText(group.getMembers());
         holder.groupKey = group.getKey();
-//        Glide.with(mContext)
-//                .using(new FirebaseImageLoader())
-//                .load(FirebaseStorage.getInstance().getReference("groupImages").child(group.getImageKey()))
-//                .into(holder.groupImage);
-        Glide.with(mContext).load(group.getKey()).into(holder.groupImage);
+        Glide.with(mContext)
+                .using(new FirebaseImageLoader())
+                .load(FirebaseStorage.getInstance().getReference().child(group.getKey()))
+                .into(holder.groupImage);
     }
 
     @Override
@@ -61,6 +62,8 @@ class GroupAdapter extends RecyclerView.Adapter<GroupAdapter.ViewHolder> {
             groupImage = (ImageView) v.findViewById(R.id.img);
             groupName = (TextView) v.findViewById(R.id.name);
             groupMembers = (TextView) v.findViewById(R.id.members);
+            groupImage.setAdjustViewBounds(true);
+            groupImage.setScaleType(ImageView.ScaleType.FIT_XY);
             v.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
