@@ -1,8 +1,12 @@
 package palie.splist;
 
+import android.app.Activity;
+import android.app.ActivityOptions;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.v4.app.ActivityOptionsCompat;
+import android.support.v4.view.ViewCompat;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -20,11 +24,13 @@ class GroupAdapter extends RecyclerView.Adapter<GroupAdapter.ViewHolder> {
 
     private List<Group> mGroups;
     private Context mContext;
+    private final GroupClickListener groupClickListener;
 
-    GroupAdapter(List<Group> groups, Context mContext) {
+    GroupAdapter(List<Group> groups, Context mContext, GroupClickListener groupClickListener) {
         super();
         this.mGroups = groups;
         this.mContext = mContext;
+        this.groupClickListener = groupClickListener;
     }
 
     @Override
@@ -40,6 +46,8 @@ class GroupAdapter extends RecyclerView.Adapter<GroupAdapter.ViewHolder> {
         holder.groupName.setText(group.getName());
         holder.groupMembers.setText(group.getMembers());
         holder.groupKey = group.getKey();
+        ViewCompat.setTransitionName(holder.groupImage, group.getKey());
+        ViewCompat.setTransitionName(holder.groupName, group.getKey()+"name");
         Glide.with(mContext)
                 .using(new FirebaseImageLoader())
                 .load(FirebaseStorage.getInstance().getReference().child(group.getKey()))
@@ -62,15 +70,10 @@ class GroupAdapter extends RecyclerView.Adapter<GroupAdapter.ViewHolder> {
             groupImage = (ImageView) v.findViewById(R.id.img);
             groupName = (TextView) v.findViewById(R.id.name);
             groupMembers = (TextView) v.findViewById(R.id.members);
-            groupImage.setAdjustViewBounds(true);
-            groupImage.setScaleType(ImageView.ScaleType.FIT_XY);
             v.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    Intent i = new Intent(mContext, GroupActivity.class);
-                    i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                    i.putExtra("key", groupKey);
-                    mContext.startActivity(i);
+                    groupClickListener.onGroupClick(groupKey, groupImage, groupName);
                 }
             });
         }

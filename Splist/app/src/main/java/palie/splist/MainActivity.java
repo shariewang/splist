@@ -1,15 +1,20 @@
 package palie.splist;
 
+import android.app.ActivityOptions;
 import android.content.Intent;
 import android.support.v4.app.FragmentTransaction;
+import android.support.v4.view.ViewCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Pair;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.ImageView;
+import android.widget.TextView;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.ChildEventListener;
@@ -20,7 +25,7 @@ import com.google.firebase.database.FirebaseDatabase;
 import java.util.ArrayList;
 import java.util.List;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements GroupClickListener {
 
     private List<Group> mGroups;
     static GroupAdapter groupAdapter;
@@ -41,7 +46,7 @@ public class MainActivity extends AppCompatActivity {
         mGroups = new ArrayList<>();
         RecyclerView recyclerView = (RecyclerView) findViewById(R.id.recyclerView);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
-        groupAdapter = new GroupAdapter(mGroups, getApplicationContext());
+        groupAdapter = new GroupAdapter(mGroups, getApplicationContext(), this);
         recyclerView.setAdapter(groupAdapter);
 
         db.getReference("Groups").addChildEventListener(new ChildEventListener() {
@@ -86,4 +91,13 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    @Override
+    public void onGroupClick(String key, ImageView sharedImageView, TextView sharedTextView) {
+        Intent i = new Intent(this, GroupActivity.class);
+        i.putExtra("key", key);
+        ActivityOptions options = ActivityOptions
+                .makeSceneTransitionAnimation(this,
+                        Pair.create((View)sharedImageView, key), Pair.create((View) sharedTextView, key ));
+        startActivity(i, options.toBundle());
+    }
 }

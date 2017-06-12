@@ -22,6 +22,7 @@
     <string name="awaiting_others_payments">Awaiting others\' payments</string>
     <string name="add_a_member">Add a member</string>
     <string name="change_group_photo">Change group photo</string>
+    <string name="delete_group">Delete group</string>
 
     <string-array name="list_categories">
         <item>Food</item>

@@ -1,0 +1,18 @@
+<transitionSet xmlns:android="http://schemas.android.com/apk/res/android">
+    <changeBounds>
+        <targets>
+            <target android:excludeId="@android:id/statusBarBackground" />
+            <target android:excludeId="@android:id/navigationBarBackground" />
+            <target android:excludeId="@id/app_bar"/>
+        </targets>
+    </changeBounds>
+    <changeImageTransform>
+        <targets>
+            <target android:excludeId="@android:id/statusBarBackground" />
+            <target android:excludeId="@android:id/navigationBarBackground" />
+            <target android:excludeId="@id/app_bar"/>
+        </targets>
+    </changeImageTransform>
+    <changeTransform/>
+
+</transitionSet>
