@@ -31,8 +31,10 @@ import com.google.firebase.storage.FirebaseStorage;
 public class GroupActivity extends AppCompatActivity {
 
     private String key;
+    private int position;
     private CollapsingToolbarLayout toolbarLayout;
     private static FirebaseDatabase db = FirebaseDatabase.getInstance();
+    private GroupAdapter adapter = MainActivity.groupAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -41,10 +43,8 @@ public class GroupActivity extends AppCompatActivity {
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-        toolbar.setTitle("");
         toolbarLayout = (CollapsingToolbarLayout) findViewById(R.id.toolbar_layout);
         ImageView image = (ImageView) findViewById(R.id.image);
-        TextView name = (TextView) findViewById(R.id.groupName);
         final TextView waitingPayment = (TextView) findViewById(R.id.waiting_payment);
         final TextView lists = (TextView) findViewById(R.id.lists);
         final AlertDialog dialog = createDialog();
@@ -57,8 +57,8 @@ public class GroupActivity extends AppCompatActivity {
         });
 
         key = getIntent().getStringExtra("key");
+        position = getIntent().getIntExtra("position", 0);
         image.setTransitionName(key);
-        name.setTransitionName(key+"name");
 
         Glide.with(this).using(new FirebaseImageLoader())
                 .load(FirebaseStorage.getInstance().getReference().child(key)).into(image);
@@ -131,6 +131,10 @@ public class GroupActivity extends AppCompatActivity {
                 //TODO: regenerate palette
                 return true;
             case R.id.delete_group:
+                db.getReference("Groups").child(key).removeValue();
+                adapter.notifyItemRemoved(position);
+                adapter.notifyItemRangeChanged(position, adapter.getItemCount());
+                finish();
                 return true;
             default:
                 return super.onOptionsItemSelected(item);

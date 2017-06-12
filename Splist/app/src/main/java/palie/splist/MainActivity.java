@@ -92,12 +92,12 @@ public class MainActivity extends AppCompatActivity implements GroupClickListene
     }
 
     @Override
-    public void onGroupClick(String key, ImageView sharedImageView, TextView sharedTextView) {
+    public void onGroupClick(int position, String key, ImageView sharedImageView) {
         Intent i = new Intent(this, GroupActivity.class);
         i.putExtra("key", key);
+        i.putExtra("position", position);
         ActivityOptions options = ActivityOptions
-                .makeSceneTransitionAnimation(this,
-                        Pair.create((View)sharedImageView, key), Pair.create((View) sharedTextView, key ));
+                .makeSceneTransitionAnimation(this, Pair.create((View)sharedImageView, key));
         startActivity(i, options.toBundle());
     }
 }

@@ -46,6 +46,7 @@ class GroupAdapter extends RecyclerView.Adapter<GroupAdapter.ViewHolder> {
         holder.groupName.setText(group.getName());
         holder.groupMembers.setText(group.getMembers());
         holder.groupKey = group.getKey();
+        holder.position = position;
         ViewCompat.setTransitionName(holder.groupImage, group.getKey());
         ViewCompat.setTransitionName(holder.groupName, group.getKey()+"name");
         Glide.with(mContext)
@@ -64,6 +65,7 @@ class GroupAdapter extends RecyclerView.Adapter<GroupAdapter.ViewHolder> {
         ImageView groupImage;
         TextView groupName, groupMembers;
         String groupKey;
+        int position;
 
         ViewHolder(View v) {
             super(v);
@@ -73,7 +75,7 @@ class GroupAdapter extends RecyclerView.Adapter<GroupAdapter.ViewHolder> {
             v.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    groupClickListener.onGroupClick(groupKey, groupImage, groupName);
+                    groupClickListener.onGroupClick(position, groupKey, groupImage);
                 }
             });
         }

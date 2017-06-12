@@ -4,5 +4,5 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 public interface GroupClickListener {
-    void onGroupClick(String key, ImageView sharedImageView, TextView sharedTextView);
+    void onGroupClick(int position, String key, ImageView sharedImageView);
 }
