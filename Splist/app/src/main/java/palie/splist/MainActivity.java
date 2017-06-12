@@ -27,7 +27,7 @@ import java.util.List;
 
 public class MainActivity extends AppCompatActivity implements GroupClickListener {
 
-    private List<Group> mGroups;
+    static List<Group> mGroups;
     static GroupAdapter groupAdapter;
     private static FirebaseDatabase db = FirebaseDatabase.getInstance();
 
@@ -38,6 +38,7 @@ public class MainActivity extends AppCompatActivity implements GroupClickListene
 
         setTitle("My groups");
         if (getSupportActionBar() != null) {
+            getSupportActionBar().setElevation(0);
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
             getSupportActionBar().setHomeButtonEnabled(true);
             getSupportActionBar().setHomeAsUpIndicator(R.drawable.ic_person_outline_black_24dp);

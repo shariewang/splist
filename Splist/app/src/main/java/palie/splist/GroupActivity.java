@@ -28,6 +28,8 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
 
+import java.util.List;
+
 public class GroupActivity extends AppCompatActivity {
 
     private String key;
@@ -35,6 +37,7 @@ public class GroupActivity extends AppCompatActivity {
     private CollapsingToolbarLayout toolbarLayout;
     private static FirebaseDatabase db = FirebaseDatabase.getInstance();
     private GroupAdapter adapter = MainActivity.groupAdapter;
+    private List<Group> mGroups = MainActivity.mGroups;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -109,10 +112,6 @@ public class GroupActivity extends AppCompatActivity {
                 .createFromResource(this, R.array.list_categories, android.R.layout.simple_spinner_item);
         categoryAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         ((Spinner) view.findViewById(R.id.category)).setAdapter(categoryAdapter);
-        ArrayAdapter<CharSequence> colorAdapter = ArrayAdapter
-                .createFromResource(this, R.array.list_colors, android.R.layout.simple_spinner_item);
-        colorAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        ((Spinner) view.findViewById(R.id.color)).setAdapter(colorAdapter);
         return builder.create();
     }
 
@@ -132,6 +131,7 @@ public class GroupActivity extends AppCompatActivity {
                 return true;
             case R.id.delete_group:
                 db.getReference("Groups").child(key).removeValue();
+                mGroups.remove(position);
                 adapter.notifyItemRemoved(position);
                 adapter.notifyItemRangeChanged(position, adapter.getItemCount());
                 finish();
