@@ -7,6 +7,7 @@ import android.support.v4.util.LruCache;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.graphics.Palette;
+import android.support.v7.widget.LinearLayoutCompat;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -58,7 +59,8 @@ public class NewGroupActivity extends AppCompatActivity {
                         .setPickTypes(EPickType.CAMERA, EPickType.GALLERY)
                         .setCameraButtonText("Take a photo")
                         .setGalleryButtonText("Choose from gallery")
-                        .setSystemDialog(true);
+                        .setSystemDialog(true)
+                        .setButtonOrientation(LinearLayoutCompat.HORIZONTAL);
                 PickImageDialog.build(setup).setOnPickResult(new IPickResult() {
                     @Override
                     public void onPickResult(PickResult pickResult) {

@@ -28,6 +28,8 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
 
+import java.util.List;
+
 public class GroupActivity extends AppCompatActivity {
 
     private String key;
@@ -35,6 +37,7 @@ public class GroupActivity extends AppCompatActivity {
     private CollapsingToolbarLayout toolbarLayout;
     private static FirebaseDatabase db = FirebaseDatabase.getInstance();
     private GroupAdapter adapter = MainActivity.groupAdapter;
+    private List<Group> groups = MainActivity.mGroups;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -132,8 +135,9 @@ public class GroupActivity extends AppCompatActivity {
                 return true;
             case R.id.delete_group:
                 db.getReference("Groups").child(key).removeValue();
+                groups.remove(position);
                 adapter.notifyItemRemoved(position);
-                adapter.notifyItemRangeChanged(position, adapter.getItemCount());
+                adapter.notifyItemRangeRemoved(position, adapter.getItemCount());
                 finish();
                 return true;
             default:

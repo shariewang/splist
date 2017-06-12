@@ -27,7 +27,7 @@ import java.util.List;
 
 public class MainActivity extends AppCompatActivity implements GroupClickListener {
 
-    private List<Group> mGroups;
+    static List<Group> mGroups;
     static GroupAdapter groupAdapter;
     private static FirebaseDatabase db = FirebaseDatabase.getInstance();
 
