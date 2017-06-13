@@ -33,4 +33,11 @@
 
     <style name="AppTheme.PopupOverlay" parent="ThemeOverlay.AppCompat.Light" />
 
+    <style name="ThemeActionBar"
+        parent="Widget.AppCompat.Light.ActionBar.Solid">
+        <item name="android:background">@color/translucentWhite</item>
+        <!-- Support library compatibility -->
+        <item name="background">@color/translucentWhite</item>
+    </style>
+
 </resources>

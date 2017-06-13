@@ -45,9 +45,11 @@ public class GroupActivity extends AppCompatActivity {
         setContentView(R.layout.activity_group);
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        toolbar.setTitle("");
         setSupportActionBar(toolbar);
         toolbarLayout = (CollapsingToolbarLayout) findViewById(R.id.toolbar_layout);
         ImageView image = (ImageView) findViewById(R.id.image);
+        final TextView title = (TextView) findViewById(R.id.title);
         final TextView waitingPayment = (TextView) findViewById(R.id.waiting_payment);
         final TextView lists = (TextView) findViewById(R.id.lists);
         final AlertDialog dialog = createDialog();
@@ -72,7 +74,7 @@ public class GroupActivity extends AppCompatActivity {
                 for (DataSnapshot d : dataSnapshot.getChildren()) {
                     switch(d.getKey()) {
                         case "name":
-                            toolbarLayout.setTitle(d.getValue(String.class));
+                            title.setText(d.getValue(String.class));
                             break;
                         case "vibrant":
                             waitingPayment.setTextColor(d.getValue(Integer.class));
