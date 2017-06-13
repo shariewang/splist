@@ -68,7 +68,8 @@
                 android:text="@string/awaiting_payment"
                 android:textStyle="bold" />
 
-            <ListView
+            <android.support.v7.widget.RecyclerView
+                android:id="@+id/unpaid"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content" />
 
@@ -80,7 +81,8 @@
                 android:text="@string/lists"
                 android:textStyle="bold" />
 
-            <ListView
+            <android.support.v7.widget.RecyclerView
+                android:id="@+id/active"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content" />
 
@@ -91,7 +93,8 @@
                 android:text="@string/awaiting_others_payments"
                 android:textStyle="bold" />
 
-            <ListView
+            <android.support.v7.widget.RecyclerView
+                android:id="@+id/waiting"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content" />
 

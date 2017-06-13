@@ -29,7 +29,7 @@ import java.util.List;
 
 public class MainActivity extends AppCompatActivity implements GroupClickListener {
 
-    static List<Group> mGroups;
+    static ArrayList<Group> mGroups;
     static GroupAdapter groupAdapter;
     private static FirebaseDatabase db = FirebaseDatabase.getInstance();
 
