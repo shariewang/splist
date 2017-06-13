@@ -35,6 +35,7 @@ public class NewGroupActivity extends AppCompatActivity {
     private static FirebaseStorage storage = FirebaseStorage.getInstance();
     //TODO: set default
     private Bitmap image;
+    private static int main, vibrant;
     private ImageView groupImage;
 
     @Override
@@ -60,7 +61,7 @@ public class NewGroupActivity extends AppCompatActivity {
                         .setCameraButtonText("Take a photo")
                         .setGalleryButtonText("Choose from gallery")
                         .setSystemDialog(true)
-                        .setButtonOrientation(LinearLayoutCompat.HORIZONTAL);
+                        .setButtonOrientation(LinearLayoutCompat.VERTICAL);
                 PickImageDialog.build(setup).setOnPickResult(new IPickResult() {
                     @Override
                     public void onPickResult(PickResult pickResult) {
@@ -92,7 +93,7 @@ public class NewGroupActivity extends AppCompatActivity {
                 String members = "Persons";
                 String key = db.getReference("Groups").push().getKey();
 
-                db.getReference("Groups").child(key).setValue(new Group(name, key, members));
+                createPaletteAsyncAndWriteDB(image, name, key, members);
                 ByteArrayOutputStream baos = new ByteArrayOutputStream();
                 image.compress(Bitmap.CompressFormat.JPEG, 100, baos);
                 byte[] data = baos.toByteArray();
@@ -102,14 +103,7 @@ public class NewGroupActivity extends AppCompatActivity {
                     public void onFailure(@NonNull Exception e) {
                         //TODO: Handle unsuccessful uploads
                     }
-                }).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
-                    @Override
-                    public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                        GroupAdapter adapter = MainActivity.groupAdapter;
-                        adapter.notifyItemChanged(adapter.getItemCount()-1);
-                    }
                 });
-                createPaletteAsync(image, key);
                 finish();
                 return true;
             default:
@@ -117,17 +111,15 @@ public class NewGroupActivity extends AppCompatActivity {
         }
     }
 
-    public void createPaletteAsync(Bitmap bitmap, final String key) {
-        System.out.println("Started generation");
+    public void createPaletteAsyncAndWriteDB(Bitmap bitmap, final String name, final String key, final String members) {
         Palette.from(bitmap).generate(new Palette.PaletteAsyncListener() {
             @Override
             public void onGenerated(Palette palette) {
-                db.getReference("Groups").child(key).child("vibrant").setValue(palette.getVibrantColor(
-                        palette.getLightVibrantColor(palette.getDarkVibrantColor(Color.BLUE))
-                ));
-                db.getReference("Groups").child(key).child("main").setValue(palette.getMutedColor(
-                        palette.getLightMutedColor(palette.getDarkMutedColor(palette.getDominantColor(Color.BLUE)))
-                ));
+                vibrant = palette.getVibrantColor(
+                        palette.getLightVibrantColor(palette.getDarkVibrantColor(Color.BLUE)));
+                main = palette.getMutedColor(palette.getLightMutedColor(
+                        palette.getDarkMutedColor(palette.getDominantColor(Color.BLUE))));
+                db.getReference("Groups").child(key).setValue(new Group(name, key, members, main, vibrant));
             }
         });
     }

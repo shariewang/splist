@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.ActivityOptionsCompat;
 import android.support.v4.view.ViewCompat;
+import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -43,6 +44,8 @@ class GroupAdapter extends RecyclerView.Adapter<GroupAdapter.ViewHolder> {
     public void onBindViewHolder(ViewHolder holder, int position) {
         Group group = mGroups.get(position);
 
+        System.out.println(group.getMain());
+        holder.card.setCardBackgroundColor(group.getMain());
         holder.groupName.setText(group.getName());
         holder.groupMembers.setText(group.getMembers());
         holder.groupKey = group.getKey();
@@ -65,6 +68,7 @@ class GroupAdapter extends RecyclerView.Adapter<GroupAdapter.ViewHolder> {
         ImageView groupImage;
         TextView groupName, groupMembers;
         String groupKey;
+        CardView card;
         int position;
 
         ViewHolder(View v) {
@@ -72,6 +76,7 @@ class GroupAdapter extends RecyclerView.Adapter<GroupAdapter.ViewHolder> {
             groupImage = (ImageView) v.findViewById(R.id.img);
             groupName = (TextView) v.findViewById(R.id.name);
             groupMembers = (TextView) v.findViewById(R.id.members);
+            card = (CardView) v.findViewById(R.id.card);
             v.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
