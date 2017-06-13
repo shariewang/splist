@@ -13,4 +13,12 @@ public class List {
         this.key = key;
         this.name = name;
     }
+
+    public String getKey() {
+        return key;
+    }
+
+    public String getName() {
+        return name;
+    }
 }

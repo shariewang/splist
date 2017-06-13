@@ -21,7 +21,7 @@ import com.google.firebase.storage.FirebaseStorage;
 
 import java.util.List;
 
-class GroupAdapter extends RecyclerView.Adapter<GroupAdapter.ViewHolder> {
+public class GroupAdapter extends RecyclerView.Adapter<GroupAdapter.ViewHolder> {
 
     private List<Group> mGroups;
     private Context mContext;

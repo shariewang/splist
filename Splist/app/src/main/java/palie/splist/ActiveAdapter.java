@@ -10,26 +10,31 @@ import android.widget.TextView;
 
 import java.util.ArrayList;
 
-class ActiveAdapter extends RecyclerView.Adapter<ActiveAdapter.ViewHolder> {
+class ActiveAdapter extends RecyclerView.Adapter<ListViewHolder> {
 
     private ArrayList<List> mLists;
     private Context mContext;
+    private ListClickListener listClickListener;
 
-    ActiveAdapter(ArrayList<List> mLists, Context mContext) {
+    ActiveAdapter(ArrayList<List> mLists, Context mContext, ListClickListener listClickListener) {
         super();
         this.mLists = mLists;
         this.mContext = mContext;
+        this.listClickListener = listClickListener;
     }
 
     @Override
-    public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+    public ListViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.list_view, parent, false);
-        return new ViewHolder(v);
+        return new ListViewHolder(v, listClickListener);
     }
 
     @Override
-    public void onBindViewHolder(ViewHolder holder, int position) {
+    public void onBindViewHolder(ListViewHolder holder, int position) {
         List list = mLists.get(position);
+        holder.name.setText(list.getName());
+        holder.position = position;
+        holder.listKey = list.getKey();
     }
 
     @Override
@@ -37,16 +42,5 @@ class ActiveAdapter extends RecyclerView.Adapter<ActiveAdapter.ViewHolder> {
         return mLists.size();
     }
 
-    class ViewHolder extends RecyclerView.ViewHolder {
-
-        ImageView icon;
-        TextView name;
-
-        ViewHolder(View v) {
-            super(v);
-            icon = (ImageView) v.findViewById(R.id.icon);
-            name = (TextView) v.findViewById(R.id.name);
-        }
-    }
 
 }

@@ -1,6 +1,8 @@
 package palie.splist;
 
+import android.app.ActivityOptions;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AlertDialog;
@@ -8,6 +10,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.util.Pair;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -28,14 +31,12 @@ import com.google.firebase.storage.FirebaseStorage;
 
 import java.util.ArrayList;
 
-public class GroupActivity extends AppCompatActivity {
+public class GroupActivity extends AppCompatActivity implements ListClickListener {
 
     private String groupKey;
     private int position;
     private static FirebaseDatabase db = FirebaseDatabase.getInstance();
     private DatabaseReference mGroup;
-    private GroupAdapter adapter = MainActivity.groupAdapter;
-    private ArrayList<Group> groups = MainActivity.mGroups;
     private ArrayList<List> activeLists, unpaidLists, waitingLists;
     private ActiveAdapter activeAdapter;
     private UnpaidAdapter unpaidAdapter;
@@ -46,7 +47,6 @@ public class GroupActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_group);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        toolbar.setTitle("");
         setSupportActionBar(toolbar);
 
         ImageView image = (ImageView) findViewById(R.id.image);
@@ -54,7 +54,19 @@ public class GroupActivity extends AppCompatActivity {
         final TextView waitingPayment = (TextView) findViewById(R.id.waiting_payment);
         final TextView lists = (TextView) findViewById(R.id.lists);
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        LinearLayoutManager llm = new LinearLayoutManager(this) {
+        LinearLayoutManager llm1 = new LinearLayoutManager(this) {
+            @Override
+            public boolean canScrollVertically() {
+                return false;
+            }
+        };
+        LinearLayoutManager llm2 = new LinearLayoutManager(this) {
+            @Override
+            public boolean canScrollVertically() {
+                return false;
+            }
+        };
+        LinearLayoutManager llm3 = new LinearLayoutManager(this) {
             @Override
             public boolean canScrollVertically() {
                 return false;
@@ -67,17 +79,17 @@ public class GroupActivity extends AppCompatActivity {
         RecyclerView unpaidRV = (RecyclerView) findViewById(R.id.unpaid);
         RecyclerView activeRV = (RecyclerView) findViewById(R.id.active);
         RecyclerView waitingRV = (RecyclerView) findViewById(R.id.waiting);
-        unpaidRV.setLayoutManager(llm);
-        activeRV.setLayoutManager(llm);
-        waitingRV.setLayoutManager(llm);
-        unpaidAdapter = new UnpaidAdapter(unpaidLists, getApplicationContext());
-        activeAdapter = new ActiveAdapter(activeLists, getApplicationContext());
-        waitingAdapter = new WaitingAdapter(waitingLists, getApplicationContext());
+        unpaidRV.setLayoutManager(llm1);
+        activeRV.setLayoutManager(llm2);
+        waitingRV.setLayoutManager(llm3);
+        unpaidAdapter = new UnpaidAdapter(unpaidLists, getApplicationContext(), this);
+        activeAdapter = new ActiveAdapter(activeLists, getApplicationContext(), this);
+        waitingAdapter = new WaitingAdapter(waitingLists, getApplicationContext(), this);
         unpaidRV.setAdapter(unpaidAdapter);
         activeRV.setAdapter(activeAdapter);
         waitingRV.setAdapter(waitingAdapter);
 
-        groupKey = getIntent().getStringExtra("groupKey");
+        groupKey = getIntent().getStringExtra("key");
         position = getIntent().getIntExtra("position", 0);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -205,6 +217,7 @@ public class GroupActivity extends AppCompatActivity {
                     public void onClick(DialogInterface dialogInterface, int i) {
                         String key = db.getReference("Lists").push().getKey();
                         db.getReference("Lists").child(key).setValue(new List(key, name.getText().toString()));
+                        db.getReference("Groups").child(groupKey).child("active").child(key).setValue(key);
                         dialogInterface.dismiss();
                     }
                 })
@@ -241,13 +254,21 @@ public class GroupActivity extends AppCompatActivity {
                 return true;
             case R.id.delete_group:
                 db.getReference("Groups").child(groupKey).removeValue();
-                groups.remove(position);
-                adapter.notifyItemRemoved(position);
-                adapter.notifyItemRangeRemoved(position, adapter.getItemCount());
+                MainActivity.mGroups.remove(position);
+                MainActivity.groupAdapter.notifyItemRemoved(position);
+                MainActivity.groupAdapter.notifyItemRangeRemoved(position, MainActivity.groupAdapter.getItemCount());
                 finish();
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
         }
+    }
+
+    @Override
+    public void onGroupClick(int position, String key) {
+        Intent i = new Intent(this, ListActivity.class);
+        i.putExtra("key", key);
+        i.putExtra("position", position);
+        startActivity(i);
     }
 }

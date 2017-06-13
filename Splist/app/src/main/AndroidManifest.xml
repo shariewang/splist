@@ -21,8 +21,8 @@
             android:theme="@style/LoginTheme" />
         <activity
             android:name=".MainActivity"
-            android:theme="@style/AppTheme"
-            android:background="@color/grayish">
+            android:background="@color/grayish"
+            android:theme="@style/AppTheme">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -30,9 +30,10 @@
             </intent-filter>
         </activity>
         <activity android:name=".NewGroupActivity" />
-        <activity android:name=".GroupActivity"
-            android:theme="@style/AppTheme.NoActionBar">
-        </activity>
+        <activity
+            android:name=".GroupActivity"
+            android:theme="@style/AppTheme.NoActionBar"></activity>
+
         <provider
             android:name="android.support.v4.content.FileProvider"
             android:authorities="${applicationId}.com.vansuita.pickimage.provider"
@@ -43,6 +44,11 @@
                 android:name="android.support.FILE_PROVIDER_PATHS"
                 android:resource="@xml/picker_provider_paths" />
         </provider>
+
+        <activity
+            android:name=".ListActivity"
+            android:label="@string/title_activity_list"
+            android:theme="@style/AppTheme.NoActionBar"></activity>
     </application>
 
 </manifest>
