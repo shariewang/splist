@@ -266,9 +266,10 @@ public class GroupActivity extends AppCompatActivity implements ListClickListene
     }
 
     @Override
-    public void onGroupClick(int position, String key) {
+    public void onListClick(int position, String key, String name) {
         Intent i = new Intent(this, ListActivity.class);
         i.putExtra("key", key);
+        i.putExtra("name", name);
         i.putExtra("position", position);
         startActivity(i);
     }

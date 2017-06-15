@@ -21,7 +21,7 @@ class ListViewHolder extends RecyclerView.ViewHolder {
         v.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                listClickListener.onGroupClick(position, listKey);
+                listClickListener.onListClick(position, listKey, name.getText().toString());
             }
         });
     }

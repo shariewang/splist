@@ -10,8 +10,10 @@
     <android.support.design.widget.AppBarLayout
         android:id="@+id/app_bar"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="200dp"
+        android:background="@android:color/holo_purple"
         android:fitsSystemWindows="true"
+        android:stateListAnimator="@animator/shadow"
         android:theme="@style/AppTheme.AppBarOverlay"
         app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
@@ -21,7 +23,6 @@
             android:layout_height="match_parent"
             android:fitsSystemWindows="true"
             app:contentScrim="?attr/colorPrimary"
-            app:layout_scrollFlags="scroll|exitUntilCollapsed"
             app:titleEnabled="false">
 
             <LinearLayout
@@ -40,19 +41,21 @@
                     android:id="@+id/textView"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginLeft="32dp"
+                    android:layout_marginBottom="8dp"
+                    android:layout_marginLeft="16dp"
                     android:text="My items"
                     android:textColor="@android:color/black" />
 
-                <ListView
-                    android:id="@+id/myitems"
+                <android.support.v7.widget.RecyclerView
+                    android:id="@+id/items"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:layout_marginBottom="16dp"
-                    android:layout_marginLeft="32dp" />
+                    android:layout_marginLeft="16dp" />
+
             </LinearLayout>
 
         </android.support.design.widget.CollapsingToolbarLayout>
+
     </android.support.design.widget.AppBarLayout>
 
     <include layout="@layout/content_list" />
@@ -62,8 +65,10 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_margin="@dimen/fab_margin"
+        app:elevation="9dp"
+        app:fabSize="normal"
         app:layout_anchor="@id/app_bar"
         app:layout_anchorGravity="bottom|end"
-        app:srcCompat="@android:drawable/ic_dialog_email" />
+        app:srcCompat="@drawable/ic_shopping_cart_white_24dp" />
 
 </android.support.design.widget.CoordinatorLayout>

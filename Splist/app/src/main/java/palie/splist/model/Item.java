@@ -5,6 +5,8 @@ public class Item {
     private boolean checked;
     private String item;
 
+    public Item() {}
+
     public Item(String item) {
         this.checked = false;
         this.item = item;

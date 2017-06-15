@@ -1,5 +1,5 @@
 package palie.splist;
 
 interface ListClickListener {
-    void onGroupClick(int position, String key);
+    void onListClick(int position, String key, String name);
 }

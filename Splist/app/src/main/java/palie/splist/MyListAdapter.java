@@ -1,50 +1,63 @@
 package palie.splist;
 
 import android.content.Context;
+import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ArrayAdapter;
 import android.widget.CheckBox;
-import android.widget.TextView;
+import android.widget.EditText;
 
-import java.util.List;
+import java.util.ArrayList;
 
 import palie.splist.model.Item;
 
-public class MyListAdapter extends ArrayAdapter<Item> {
+class MyListAdapter extends RecyclerView.Adapter<MyListAdapter.ViewHolder> {
 
-    public MyListAdapter(Context context, int resourceID) {
-        super(context, resourceID);
-    }
+    private Context mContext;
+    private ArrayList<Item> items;
 
-    public MyListAdapter(Context context, int resource, List<Item> items) {
-        super(context, resource, items);
+    MyListAdapter(Context mContext, ArrayList<Item> items) {
+        super();
+        this.mContext = mContext;
+        this.items = items;
     }
 
     @Override
-    public View getView(int position, View convertView, ViewGroup parent) {
-        ViewHolder holder;
-
-        if (convertView == null) {
-            convertView = LayoutInflater.from(getContext()).inflate(R.layout.checkbox_view, null);
-            holder = new ViewHolder();
-            holder.item = (TextView) convertView.findViewById(R.id.item);
-            holder.checkBox = (CheckBox) convertView.findViewById(R.id.checkBox);
-            convertView.setTag(holder);
-        } else {
-            holder = (ViewHolder) convertView.getTag();
-        }
-
-        Item item = getItem(position);
-        holder.checkBox.setChecked(item.getChecked());
-        holder.item.setText(item.getItem());
-
-        return convertView;
+    public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+        View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.checkbox_view, parent, false);
+        return new ViewHolder(v);
     }
 
-    private static class ViewHolder {
-        private TextView item;
-        private CheckBox checkBox;
+    @Override
+    public void onBindViewHolder(ViewHolder holder, int position) {
+        Item item = items.get(position);
+
+        //if last item, it's the dummy item
+        if (position == getItemCount() - 1) {
+            holder.checkBox.setButtonDrawable(R.drawable.ic_add_white_24dp);
+            holder.item.setHint("Add item");
+        } else {
+            holder.checkBox.setChecked(item.getChecked());
+            holder.item.setText(item.getItem());
+        }
+    }
+
+    @Override
+    public int getItemCount() {
+        return items.size();
+    }
+
+    class ViewHolder extends RecyclerView.ViewHolder {
+
+        CheckBox checkBox;
+        EditText item;
+
+        ViewHolder(View v) {
+            super(v);
+            checkBox = (CheckBox) v.findViewById(R.id.checkBox);
+            item = (EditText) v.findViewById(R.id.item);
+        }
+
     }
 }
