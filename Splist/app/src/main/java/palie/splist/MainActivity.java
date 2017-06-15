@@ -2,30 +2,27 @@ package palie.splist;
 
 import android.app.ActivityOptions;
 import android.content.Intent;
-import android.graphics.Color;
-import android.graphics.drawable.ColorDrawable;
-import android.support.v4.app.FragmentTransaction;
-import android.support.v4.view.ViewCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Pair;
 import android.view.Menu;
-import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
-import android.widget.TextView;
 
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
-import java.util.List;
+
+import palie.splist.model.Group;
 
 public class MainActivity extends AppCompatActivity implements GroupClickListener {
 
@@ -51,12 +48,29 @@ public class MainActivity extends AppCompatActivity implements GroupClickListene
         groupAdapter = new GroupAdapter(mGroups, getApplicationContext(), this);
         recyclerView.setAdapter(groupAdapter);
 
-        db.getReference("Groups").addChildEventListener(new ChildEventListener() {
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+        db.getReference("Users").child(user.getUid()).child("groups").addChildEventListener(new ChildEventListener() {
             @Override
             public void onChildAdded(DataSnapshot dataSnapshot, String s) {
-                Group group = dataSnapshot.getValue(Group.class);
-                mGroups.add(group);
-                groupAdapter.notifyItemInserted(mGroups.size() - 1);
+                final String groupKey = dataSnapshot.getValue(String.class);
+                db.getReference("Groups").addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(DataSnapshot dataSnapshot) {
+                        for (DataSnapshot ds : dataSnapshot.getChildren()) {
+                            if (ds.getKey().equals(groupKey)) {
+                                Group group = ds.getValue(Group.class);
+                                mGroups.add(group);
+                                groupAdapter.notifyItemInserted(mGroups.size() - 1);
+                                break;
+                            }
+                        }
+                    }
+
+                    @Override
+                    public void onCancelled(DatabaseError databaseError) {
+
+                    }
+                });
             }
 
             @Override
@@ -101,5 +115,10 @@ public class MainActivity extends AppCompatActivity implements GroupClickListene
         ActivityOptions options = ActivityOptions
                 .makeSceneTransitionAnimation(this, Pair.create((View)sharedImageView, key));
         startActivity(i, options.toBundle());
+    }
+
+    private void getGroup(final String key) {
+
+
     }
 }

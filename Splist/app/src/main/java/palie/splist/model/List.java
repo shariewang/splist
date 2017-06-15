@@ -1,8 +1,4 @@
-package palie.splist;
-
-/**
- * Created by Sharie on 6/13/2017.
- */
+package palie.splist.model;
 
 public class List {
 

@@ -1,8 +1,6 @@
-package palie.splist;
+package palie.splist.model;
 
-import java.util.List;
-
-class Group {
+public class Group {
 
     private String name, key;
     private String members;
@@ -15,7 +13,7 @@ class Group {
 //        this.members = members;
 //    }
 
-    Group(String name, String key, String members, int main, int vibrant) {
+    public Group(String name, String key, String members, int main, int vibrant) {
         this.name = name;
         this.key = key;
         this.members = members;

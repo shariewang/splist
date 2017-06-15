@@ -3,7 +3,6 @@ package palie.splist;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.support.annotation.NonNull;
-import android.support.v4.util.LruCache;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.graphics.Palette;
@@ -15,7 +14,7 @@ import android.widget.EditText;
 import android.widget.ImageView;
 
 import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.UploadTask;
@@ -26,6 +25,8 @@ import com.vansuita.pickimage.enums.EPickType;
 import com.vansuita.pickimage.listeners.IPickResult;
 
 import java.io.ByteArrayOutputStream;
+
+import palie.splist.model.Group;
 
 
 public class NewGroupActivity extends AppCompatActivity {
@@ -120,6 +121,8 @@ public class NewGroupActivity extends AppCompatActivity {
                 main = palette.getMutedColor(palette.getLightMutedColor(
                         palette.getDarkMutedColor(palette.getDominantColor(Color.BLUE))));
                 db.getReference("Groups").child(key).setValue(new Group(name, key, members, main, vibrant));
+                String uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
+                db.getReference("Users").child(uid).child("groups").setValue(key);
             }
         });
     }
