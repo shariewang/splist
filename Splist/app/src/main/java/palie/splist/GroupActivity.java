@@ -30,6 +30,9 @@ import com.google.firebase.storage.FirebaseStorage;
 import java.util.ArrayList;
 
 import palie.splist.model.List;
+import palie.splist.rvutils.ActiveAdapter;
+import palie.splist.rvutils.UnpaidAdapter;
+import palie.splist.rvutils.WaitingAdapter;
 
 public class GroupActivity extends AppCompatActivity implements ListClickListener {
 

@@ -1,22 +1,23 @@
-package palie.splist;
+package palie.splist.rvutils;
 
 import android.content.Context;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-
 import java.util.ArrayList;
 
+import palie.splist.ListClickListener;
+import palie.splist.R;
 import palie.splist.model.List;
 
-class UnpaidAdapter extends RecyclerView.Adapter<ListViewHolder> {
+public class ActiveAdapter extends RecyclerView.Adapter<ListViewHolder> {
 
     private ArrayList<List> mLists;
     private Context mContext;
     private ListClickListener listClickListener;
 
-    UnpaidAdapter(ArrayList<List> mLists, Context mContext, ListClickListener listClickListener) {
+    public ActiveAdapter(ArrayList<List> mLists, Context mContext, ListClickListener listClickListener) {
         super();
         this.mLists = mLists;
         this.mContext = mContext;
@@ -32,6 +33,7 @@ class UnpaidAdapter extends RecyclerView.Adapter<ListViewHolder> {
     @Override
     public void onBindViewHolder(ListViewHolder holder, int position) {
         List list = mLists.get(position);
+        holder.name.setText(list.getName());
         holder.position = position;
         holder.listKey = list.getKey();
     }
@@ -40,4 +42,6 @@ class UnpaidAdapter extends RecyclerView.Adapter<ListViewHolder> {
     public int getItemCount() {
         return mLists.size();
     }
+
+
 }

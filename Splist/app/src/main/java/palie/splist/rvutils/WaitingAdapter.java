@@ -1,4 +1,4 @@
-package palie.splist;
+package palie.splist.rvutils;
 
 import android.content.Context;
 import android.support.v7.widget.RecyclerView;
@@ -6,15 +6,19 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import java.util.ArrayList;
-import palie.splist.model.List;
 
-class WaitingAdapter extends RecyclerView.Adapter<ListViewHolder> {
+import palie.splist.ListClickListener;
+import palie.splist.R;
+import palie.splist.model.List;
+import palie.splist.rvutils.ListViewHolder;
+
+public class WaitingAdapter extends RecyclerView.Adapter<ListViewHolder> {
 
     private ArrayList<List> mLists;
     private Context mContext;
     private ListClickListener listClickListener;
 
-    WaitingAdapter(ArrayList<List> mLists, Context mContext, ListClickListener listClickListener) {
+    public WaitingAdapter(ArrayList<List> mLists, Context mContext, ListClickListener listClickListener) {
         super();
         this.mLists = mLists;
         this.mContext = mContext;

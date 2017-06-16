@@ -1,4 +1,4 @@
-package palie.splist;
+package palie.splist.rvutils;
 
 import android.content.Context;
 import android.support.v4.view.ViewCompat;
@@ -9,13 +9,12 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
-
 import com.bumptech.glide.Glide;
 import com.firebase.ui.storage.images.FirebaseImageLoader;
 import com.google.firebase.storage.FirebaseStorage;
-
 import java.util.List;
-
+import palie.splist.GroupClickListener;
+import palie.splist.R;
 import palie.splist.model.Group;
 
 public class GroupAdapter extends RecyclerView.Adapter<GroupAdapter.ViewHolder> {
@@ -24,7 +23,7 @@ public class GroupAdapter extends RecyclerView.Adapter<GroupAdapter.ViewHolder> 
     private Context mContext;
     private final GroupClickListener groupClickListener;
 
-    GroupAdapter(List<Group> groups, Context mContext, GroupClickListener groupClickListener) {
+    public GroupAdapter(List<Group> groups, Context mContext, GroupClickListener groupClickListener) {
         super();
         this.mGroups = groups;
         this.mContext = mContext;

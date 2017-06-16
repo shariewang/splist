@@ -1,5 +1,5 @@
 package palie.splist;
 
-interface ListClickListener {
+public interface ListClickListener {
     void onListClick(int position, String key, String name);
 }

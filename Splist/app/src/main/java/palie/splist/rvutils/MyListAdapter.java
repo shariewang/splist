@@ -1,11 +1,8 @@
-package palie.splist;
+package palie.splist.rvutils;
 
 import android.content.Context;
 import android.support.v7.widget.RecyclerView;
-import android.text.Editable;
-import android.text.TextWatcher;
 import android.view.LayoutInflater;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CheckBox;
@@ -13,14 +10,15 @@ import android.widget.EditText;
 
 import java.util.ArrayList;
 
+import palie.splist.R;
 import palie.splist.model.Item;
 
-class MyListAdapter extends RecyclerView.Adapter<MyListAdapter.ViewHolder> {
+public class MyListAdapter extends RecyclerView.Adapter<MyListAdapter.ViewHolder> {
 
     private Context mContext;
     private ArrayList<Item> items;
 
-    MyListAdapter(Context mContext, ArrayList<Item> items) {
+    public MyListAdapter(Context mContext, ArrayList<Item> items) {
         super();
         this.mContext = mContext;
         this.items = items;

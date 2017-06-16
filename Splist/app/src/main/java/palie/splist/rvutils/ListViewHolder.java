@@ -1,10 +1,13 @@
-package palie.splist;
+package palie.splist.rvutils;
 
 import android.content.Intent;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
+
+import palie.splist.ListClickListener;
+import palie.splist.R;
 
 
 class ListViewHolder extends RecyclerView.ViewHolder {

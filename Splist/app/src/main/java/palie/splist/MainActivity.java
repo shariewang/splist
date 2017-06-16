@@ -23,6 +23,7 @@ import com.google.firebase.database.ValueEventListener;
 import java.util.ArrayList;
 
 import palie.splist.model.Group;
+import palie.splist.rvutils.GroupAdapter;
 
 public class MainActivity extends AppCompatActivity implements GroupClickListener {
 
