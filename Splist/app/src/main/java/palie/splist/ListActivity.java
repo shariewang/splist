@@ -11,9 +11,7 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.Window;
-import android.view.WindowManager;
-import android.widget.ListView;
+import android.widget.EditText;
 
 import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
@@ -22,78 +20,35 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
+
+import it.feio.android.checklistview.models.ChecklistManager;
+import it.feio.android.checklistview.Settings;
+import it.feio.android.checklistview.exceptions.ViewNotSupportedException;
+import it.feio.android.checklistview.interfaces.CheckListChangedListener;
+import it.feio.android.checklistview.interfaces.Constants;
 import palie.splist.model.Item;
 
-public class ListActivity extends AppCompatActivity {
+public class ListActivity extends AppCompatActivity implements CheckListChangedListener {
 
     private ArrayList<Item> items;
     private static FirebaseDatabase db = FirebaseDatabase.getInstance();
+    static MyListAdapter adapter;
+    private ChecklistManager mChecklistManager;
+    private View switchView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_list);
 
+        mChecklistManager = ChecklistManager.getInstance(this);
+        switchView = (EditText) findViewById(R.id.edittext);
+        toggleCheckList();
+
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         toolbar.setTitle(getIntent().getStringExtra("name"));
         toolbar.setTitleTextColor(Color.WHITE);
         setSupportActionBar(toolbar);
-
-
-        items = new ArrayList<>();
-        final MyListAdapter adapter = new MyListAdapter(getApplicationContext(), items);
-        RecyclerView rv = (RecyclerView) findViewById(R.id.items);
-        rv.setLayoutManager(new LinearLayoutManager(this));
-        rv.setAdapter(adapter);
-        items.add(new Item());
-
-        db.getReference("Users").child("items").addChildEventListener(new ChildEventListener() {
-            @Override
-            public void onChildAdded(DataSnapshot dataSnapshot, String s) {
-                final String itemID = dataSnapshot.getValue(String.class);
-                db.getReference("Items").addListenerForSingleValueEvent(new ValueEventListener() {
-                    @Override
-                    public void onDataChange(DataSnapshot dataSnapshot) {
-                        for (DataSnapshot ds : dataSnapshot.getChildren()) {
-                            if (ds.getKey().equals(itemID)) {
-                                items.add(ds.getValue(Item.class));
-                                adapter.notifyItemInserted(adapter.getItemCount() - 2);
-                                // TODO: notifyitempositionchanged for dummy?
-                                break;
-                            }
-                        }
-                    }
-
-                    @Override
-                    public void onCancelled(DatabaseError databaseError) {
-
-                    }
-                });
-
-            }
-
-            @Override
-            public void onChildChanged(DataSnapshot dataSnapshot, String s) {
-
-            }
-
-            @Override
-            public void onChildRemoved(DataSnapshot dataSnapshot) {
-
-            }
-
-            @Override
-            public void onChildMoved(DataSnapshot dataSnapshot, String s) {
-
-            }
-
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-
-            }
-        });
-
-
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
@@ -117,5 +72,31 @@ public class ListActivity extends AppCompatActivity {
             default:
                 return super.onOptionsItemSelected(item);
         }
+    }
+
+    private void toggleCheckList() {
+        View newView;
+        try {
+            mChecklistManager.newEntryHint("Add new item");
+            mChecklistManager.setCheckListChangedListener(this);
+
+            mChecklistManager.linesSeparator(Constants.LINES_SEPARATOR);
+            mChecklistManager.keepChecked(true);
+            mChecklistManager.showCheckMarks(false);
+
+            mChecklistManager.dragEnabled(true);
+            mChecklistManager.dragVibrationEnabled(false);
+            newView = mChecklistManager.convert(switchView);
+            mChecklistManager.replaceViews(switchView, newView);
+            switchView = newView;
+
+        } catch (ViewNotSupportedException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    public void onCheckListChanged() {
+
     }
 }

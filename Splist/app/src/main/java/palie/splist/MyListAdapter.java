@@ -2,7 +2,10 @@ package palie.splist;
 
 import android.content.Context;
 import android.support.v7.widget.RecyclerView;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CheckBox;
@@ -30,7 +33,7 @@ class MyListAdapter extends RecyclerView.Adapter<MyListAdapter.ViewHolder> {
     }
 
     @Override
-    public void onBindViewHolder(ViewHolder holder, int position) {
+    public void onBindViewHolder(final ViewHolder holder, final int position) {
         Item item = items.get(position);
 
         //if last item, it's the dummy item
@@ -58,6 +61,5 @@ class MyListAdapter extends RecyclerView.Adapter<MyListAdapter.ViewHolder> {
             checkBox = (CheckBox) v.findViewById(R.id.checkBox);
             item = (EditText) v.findViewById(R.id.item);
         }
-
     }
 }
