@@ -7,4 +7,5 @@
     <color name="colorWhite">#ffffff</color>
     <color name="translucentWhite">#7FFFFFFF</color>
     <color name="grayish">#F2F2F2</color>
+    <color name="softPurple">#b698e3</color>
 </resources>

@@ -44,7 +44,7 @@
     </style>
 
     <style name="NoActionBarTransparentStatus" parent="AppTheme.NoActionBar">
-        <item name="android:statusBarColor">@android:color/holo_purple</item>
+        <item name="android:statusBarColor">@color/softPurple</item>
     </style>
 
 </resources>

@@ -117,9 +117,4 @@ public class MainActivity extends AppCompatActivity implements GroupClickListene
                 .makeSceneTransitionAnimation(this, Pair.create((View)sharedImageView, key));
         startActivity(i, options.toBundle());
     }
-
-    private void getGroup(final String key) {
-
-
-    }
 }
