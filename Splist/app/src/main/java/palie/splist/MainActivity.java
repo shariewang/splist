@@ -2,6 +2,9 @@ package palie.splist;
 
 import android.app.ActivityOptions;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.drawable.BitmapDrawable;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
@@ -12,6 +15,9 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
 
+import com.bumptech.glide.Glide;
+import com.firebase.ui.storage.images.FirebaseImageLoader;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.ChildEventListener;
@@ -19,6 +25,8 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
 
 import java.util.ArrayList;
 
@@ -29,12 +37,26 @@ public class MainActivity extends AppCompatActivity implements GroupClickListene
 
     static ArrayList<Group> mGroups;
     static GroupAdapter groupAdapter;
+    private ImageView image;
+    private Bitmap bitmap;
     private static FirebaseDatabase db = FirebaseDatabase.getInstance();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+//        StorageReference islandRef = FirebaseStorage.getInstance().getReference().child(user.getUid());
+//        final long ONE_MEGABYTE = 1024 * 1024;
+//        islandRef.getBytes(ONE_MEGABYTE).addOnSuccessListener(new OnSuccessListener<byte[]>() {
+//            @Override
+//            public void onSuccess(byte[] bytes) {
+//                // Data for "images/island.jpg" is returns, use this as needed
+//                BitmapFactory.Options options = new BitmapFactory.Options();
+//                bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.length, options);
+//            }
+//        });
 
         setTitle("My groups");
         if (getSupportActionBar() != null) {
@@ -49,7 +71,6 @@ public class MainActivity extends AppCompatActivity implements GroupClickListene
         groupAdapter = new GroupAdapter(mGroups, getApplicationContext(), this);
         recyclerView.setAdapter(groupAdapter);
 
-        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
         db.getReference("Users").child(user.getUid()).child("groups").addChildEventListener(new ChildEventListener() {
             @Override
             public void onChildAdded(DataSnapshot dataSnapshot, String s) {
@@ -102,6 +123,7 @@ public class MainActivity extends AppCompatActivity implements GroupClickListene
                 return true;
             case R.id.signOut:
                 FirebaseAuth.getInstance().signOut();
+                finish();
                 return true;
             default:
                 return super.onOptionsItemSelected(item);

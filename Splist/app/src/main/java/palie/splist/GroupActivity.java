@@ -2,6 +2,7 @@ package palie.splist;
 
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.res.ColorStateList;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AlertDialog;
@@ -57,7 +58,7 @@ public class GroupActivity extends AppCompatActivity implements ListClickListene
         final TextView title = (TextView) findViewById(R.id.title);
         final TextView waitingPayment = (TextView) findViewById(R.id.waiting_payment);
         final TextView lists = (TextView) findViewById(R.id.lists);
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
+        final FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         LinearLayoutManager llm1 = new LinearLayoutManager(this) {
             @Override
             public boolean canScrollVertically() {
@@ -119,7 +120,9 @@ public class GroupActivity extends AppCompatActivity implements ListClickListene
                             waitingPayment.setTextColor(d.getValue(Integer.class));
                             break;
                         case "main":
-                            lists.setTextColor(d.getValue(Integer.class));
+                            int color = d.getValue(Integer.class);
+                            lists.setTextColor(color);
+                            fab.setBackgroundTintList(ColorStateList.valueOf(color));
                             break;
                     }
                 }
@@ -235,10 +238,10 @@ public class GroupActivity extends AppCompatActivity implements ListClickListene
                 .createFromResource(this, R.array.list_categories, android.R.layout.simple_spinner_item);
         categoryAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         ((Spinner) view.findViewById(R.id.category)).setAdapter(categoryAdapter);
-        ArrayAdapter<CharSequence> colorAdapter = ArrayAdapter
-                .createFromResource(this, R.array.list_colors, android.R.layout.simple_spinner_item);
-        colorAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        ((Spinner) view.findViewById(R.id.color)).setAdapter(colorAdapter);
+//        ArrayAdapter<CharSequence> colorAdapter = ArrayAdapter
+//                .createFromResource(this, R.array.list_colors, android.R.layout.simple_spinner_item);
+//        colorAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+//        ((Spinner) view.findViewById(R.id.color)).setAdapter(colorAdapter);
         return builder.create();
     }
 

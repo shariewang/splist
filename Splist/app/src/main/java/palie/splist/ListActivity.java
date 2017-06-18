@@ -17,16 +17,14 @@ import java.util.ArrayList;
 import it.feio.android.checklistview.models.CheckListViewItem;
 import it.feio.android.checklistview.models.CheckListView;
 import it.feio.android.checklistview.models.ChecklistManager;
-import it.feio.android.checklistview.models.CheckListView;
 import it.feio.android.checklistview.exceptions.ViewNotSupportedException;
 import it.feio.android.checklistview.interfaces.CheckListChangedListener;
 import it.feio.android.checklistview.interfaces.Constants;
-import palie.splist.model.Item;
 import palie.splist.rvutils.MyListAdapter;
 
-public class ListActivity extends AppCompatActivity implements CheckListChangedListener {
+public class ListActivity extends AppCompatActivity {
 
-    private ArrayList<Item> items;
+    private ArrayList<CheckListViewItem> items;
     private static FirebaseDatabase db = FirebaseDatabase.getInstance();
     static MyListAdapter adapter;
     private ChecklistManager mChecklistManager;
@@ -85,9 +83,13 @@ public class ListActivity extends AppCompatActivity implements CheckListChangedL
                 editMode = !editMode;
                 if (editMode) {
                     item.setIcon(R.drawable.ic_check_white_24dp);
+                    checklist.addHintItem();
                 } else {
                     //save just got clicked
                     item.setIcon(R.drawable.ic_edit_white_24dp);
+                    for (int i = 0; i < mChecklistManager.getCount(); i++) { //exclude hint
+                        items.add(checklist.getChildAt(i));
+                    }
                 }
                 mChecklistManager.toggleDragHandler(checklist, editMode);
                 return true;
@@ -96,10 +98,5 @@ public class ListActivity extends AppCompatActivity implements CheckListChangedL
             default:
                 return super.onOptionsItemSelected(item);
         }
-    }
-
-    @Override
-    public void onCheckListChanged() {
-
     }
 }

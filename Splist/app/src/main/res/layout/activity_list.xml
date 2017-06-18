@@ -25,40 +25,36 @@
             app:contentScrim="?attr/colorPrimary"
             app:titleEnabled="false">
 
-            <LinearLayout
+            <android.support.v7.widget.Toolbar
+                android:id="@+id/toolbar"
+                android:layout_width="match_parent"
+                android:layout_height="?attr/actionBarSize"
+                app:layout_collapseMode="pin"
+                app:popupTheme="@style/AppTheme.PopupOverlay" />
+
+            <TextView
+                android:id="@+id/textView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="8dp"
+                android:layout_marginLeft="16dp"
+                android:layout_marginTop="81dp"
+                android:text="My items"
+                android:textColor="@android:color/black" />
+
+            <ScrollView
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:focusableInTouchMode="true"
-                android:orientation="vertical">
+                android:layout_marginBottom="10dp"
+                android:layout_marginTop="105dp"
+                android:paddingBottom="10dp">
 
-                <android.support.v7.widget.Toolbar
-                    android:id="@+id/toolbar"
-                    android:layout_width="match_parent"
-                    android:layout_height="?attr/actionBarSize"
-                    app:layout_collapseMode="pin"
-                    app:popupTheme="@style/AppTheme.PopupOverlay" />
-
-                <TextView
-                    android:id="@+id/textView"
+                <com.neopixl.pixlui.components.edittext.EditText
+                    android:id="@+id/edittext"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginBottom="8dp"
-                    android:layout_marginLeft="16dp"
-                    android:text="My items"
-                    android:textColor="@android:color/black" />
-
-                <ScrollView
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent">
-
-                    <com.neopixl.pixlui.components.edittext.EditText
-                        android:id="@+id/edittext"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:background="@null" />
-                </ScrollView>
-
-            </LinearLayout>
+                    android:background="@null" />
+            </ScrollView>
 
         </android.support.design.widget.CollapsingToolbarLayout>
 
