@@ -19,16 +19,17 @@
             android:name=".AuthActivity"
             android:label="@string/app_name"
             android:theme="@style/LoginTheme">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
 
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
         </activity>
         <activity
             android:name=".MainActivity"
             android:background="@color/grayish"
             android:theme="@style/AppTheme">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
         </activity>
         <activity android:name=".NewGroupActivity" />
         <activity

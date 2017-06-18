@@ -1,6 +1,8 @@
 package palie.splist.rvutils;
 
 import android.content.Context;
+import android.graphics.Color;
+import android.provider.Settings;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -18,6 +20,7 @@ public class UnpaidAdapter extends RecyclerView.Adapter<ListViewHolder> {
     private ArrayList<List> mLists;
     private Context mContext;
     private ListClickListener listClickListener;
+    private int color;
 
     public UnpaidAdapter(ArrayList<List> mLists, Context mContext, ListClickListener listClickListener) {
         super();
@@ -35,8 +38,21 @@ public class UnpaidAdapter extends RecyclerView.Adapter<ListViewHolder> {
     @Override
     public void onBindViewHolder(ListViewHolder holder, int position) {
         List list = mLists.get(position);
+        holder.name.setText(list.getName());
         holder.position = position;
         holder.listKey = list.getKey();
+        switch(list.getType()) {
+            case "Office":
+                holder.icon.setImageResource(R.drawable.paperclip);
+                break;
+            case "Clothing":
+                holder.icon.setImageResource(R.drawable.clothing);
+                break;
+            case "Food":
+                holder.icon.setImageResource(R.drawable.food);
+                break;
+        }
+        holder.icon.setBackgroundColor(color);
     }
 
     @Override

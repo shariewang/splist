@@ -45,6 +45,7 @@ public class GroupActivity extends AppCompatActivity implements ListClickListene
     private ActiveAdapter activeAdapter;
     private UnpaidAdapter unpaidAdapter;
     private WaitingAdapter waitingAdapter;
+    private int vibrant, main;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -81,18 +82,6 @@ public class GroupActivity extends AppCompatActivity implements ListClickListene
         activeLists = new ArrayList<>();
         unpaidLists = new ArrayList<>();
         waitingLists = new ArrayList<>();
-        RecyclerView unpaidRV = (RecyclerView) findViewById(R.id.unpaid);
-        RecyclerView activeRV = (RecyclerView) findViewById(R.id.active);
-        RecyclerView waitingRV = (RecyclerView) findViewById(R.id.waiting);
-        unpaidRV.setLayoutManager(llm1);
-        activeRV.setLayoutManager(llm2);
-        waitingRV.setLayoutManager(llm3);
-        unpaidAdapter = new UnpaidAdapter(unpaidLists, getApplicationContext(), this);
-        activeAdapter = new ActiveAdapter(activeLists, getApplicationContext(), this);
-        waitingAdapter = new WaitingAdapter(waitingLists, getApplicationContext(), this);
-        unpaidRV.setAdapter(unpaidAdapter);
-        activeRV.setAdapter(activeAdapter);
-        waitingRV.setAdapter(waitingAdapter);
 
         groupKey = getIntent().getStringExtra("key");
         position = getIntent().getIntExtra("position", 0);
@@ -117,12 +106,13 @@ public class GroupActivity extends AppCompatActivity implements ListClickListene
                             title.setText(d.getValue(String.class));
                             break;
                         case "vibrant":
-                            waitingPayment.setTextColor(d.getValue(Integer.class));
+                            vibrant = d.getValue(Integer.class);
+                            waitingPayment.setTextColor(vibrant);
                             break;
                         case "main":
-                            int color = d.getValue(Integer.class);
-                            lists.setTextColor(color);
-                            fab.setBackgroundTintList(ColorStateList.valueOf(color));
+                            main = d.getValue(Integer.class);
+                            lists.setTextColor(main);
+                            fab.setBackgroundTintList(ColorStateList.valueOf(main));
                             break;
                     }
                 }
@@ -136,6 +126,19 @@ public class GroupActivity extends AppCompatActivity implements ListClickListene
         handleListListeners(1);
         handleListListeners(2);
         handleListListeners(3);
+
+        RecyclerView unpaidRV = (RecyclerView) findViewById(R.id.unpaid);
+        RecyclerView activeRV = (RecyclerView) findViewById(R.id.active);
+        RecyclerView waitingRV = (RecyclerView) findViewById(R.id.waiting);
+        unpaidRV.setLayoutManager(llm1);
+        activeRV.setLayoutManager(llm2);
+        waitingRV.setLayoutManager(llm3);
+        unpaidAdapter = new UnpaidAdapter(unpaidLists, getApplicationContext(), this);
+        activeAdapter = new ActiveAdapter(activeLists, getApplicationContext(), this);
+        waitingAdapter = new WaitingAdapter(waitingLists, getApplicationContext(), this);
+        unpaidRV.setAdapter(unpaidAdapter);
+        activeRV.setAdapter(activeAdapter);
+        waitingRV.setAdapter(waitingAdapter);
     }
 
     private void getAndAdd(final String key, final int type) {
@@ -217,13 +220,18 @@ public class GroupActivity extends AppCompatActivity implements ListClickListene
         AlertDialog.Builder builder = new AlertDialog.Builder(GroupActivity.this);
         View view = getLayoutInflater().inflate(R.layout.dialog_new_list, null);
         final TextView name = (TextView) view.findViewById(R.id.name);
+        final Spinner spinner = (Spinner) view.findViewById(R.id.category);
+        ArrayAdapter<CharSequence> categoryAdapter = ArrayAdapter
+                .createFromResource(this, R.array.list_categories, android.R.layout.simple_spinner_item);
+        categoryAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spinner.setAdapter(categoryAdapter);
         builder.setTitle("New list")
                 .setView(view)
                 .setPositiveButton("CREATE", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
                         String key = db.getReference("Lists").push().getKey();
-                        db.getReference("Lists").child(key).setValue(new List(key, name.getText().toString()));
+                        db.getReference("Lists").child(key).setValue(new List(key, name.getText().toString(), spinner.getSelectedItem().toString()));
                         db.getReference("Groups").child(groupKey).child("active").child(key).setValue(key);
                         dialogInterface.dismiss();
                     }
@@ -234,10 +242,7 @@ public class GroupActivity extends AppCompatActivity implements ListClickListene
                         dialogInterface.cancel();
                     }
                 });
-        ArrayAdapter<CharSequence> categoryAdapter = ArrayAdapter
-                .createFromResource(this, R.array.list_categories, android.R.layout.simple_spinner_item);
-        categoryAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        ((Spinner) view.findViewById(R.id.category)).setAdapter(categoryAdapter);
+
 //        ArrayAdapter<CharSequence> colorAdapter = ArrayAdapter
 //                .createFromResource(this, R.array.list_colors, android.R.layout.simple_spinner_item);
 //        colorAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);

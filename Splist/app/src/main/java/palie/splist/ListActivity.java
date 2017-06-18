@@ -9,6 +9,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.ImageView;
 
 import com.google.firebase.database.FirebaseDatabase;
 
@@ -30,37 +31,19 @@ public class ListActivity extends AppCompatActivity {
     private ChecklistManager mChecklistManager;
     private CheckListView checklist;
     private boolean editMode;
+    private ImageView icon;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_list);
 
-        mChecklistManager = new ChecklistManager(this);
-        mChecklistManager.linesSeparator(Constants.LINES_SEPARATOR);
-        mChecklistManager.keepChecked(false);
-        mChecklistManager.showCheckMarks(false);
-        mChecklistManager.dragEnabled(true);
-        mChecklistManager.dragVibrationEnabled(false);
-        mChecklistManager.newEntryHint("Add new item");
-        View switchView = findViewById(R.id.edittext);
-        View newView = null;
-        try {
-            newView = mChecklistManager.convert(switchView);
-
-        } catch (ViewNotSupportedException e) {
-            e.printStackTrace();
-        }
-        mChecklistManager.replaceViews(switchView, newView);
-        checklist = (CheckListView) newView;
-        editMode = false;
-        mChecklistManager.toggleDragHandler(checklist, true);
-        mChecklistManager.toggleDragHandler(checklist, false);
-
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         toolbar.setTitle(getIntent().getStringExtra("name"));
         toolbar.setTitleTextColor(Color.WHITE);
         setSupportActionBar(toolbar);
+
+        setUpChecklist();
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
@@ -98,5 +81,28 @@ public class ListActivity extends AppCompatActivity {
             default:
                 return super.onOptionsItemSelected(item);
         }
+    }
+
+    private void setUpChecklist() {
+        mChecklistManager = new ChecklistManager(this);
+        mChecklistManager.linesSeparator(Constants.LINES_SEPARATOR);
+        mChecklistManager.keepChecked(false);
+        mChecklistManager.showCheckMarks(false);
+        mChecklistManager.dragEnabled(true);
+        mChecklistManager.dragVibrationEnabled(false);
+        mChecklistManager.newEntryHint("Add new item");
+        View switchView = findViewById(R.id.edittext);
+        View newView = null;
+        try {
+            newView = mChecklistManager.convert(switchView);
+
+        } catch (ViewNotSupportedException e) {
+            e.printStackTrace();
+        }
+        mChecklistManager.replaceViews(switchView, newView);
+        checklist = (CheckListView) newView;
+        editMode = false;
+        mChecklistManager.toggleDragHandler(checklist, true);
+        mChecklistManager.toggleDragHandler(checklist, false);
     }
 }

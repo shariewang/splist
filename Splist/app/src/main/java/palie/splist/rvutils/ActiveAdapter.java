@@ -16,6 +16,7 @@ public class ActiveAdapter extends RecyclerView.Adapter<ListViewHolder> {
     private ArrayList<List> mLists;
     private Context mContext;
     private ListClickListener listClickListener;
+    private int color;
 
     public ActiveAdapter(ArrayList<List> mLists, Context mContext, ListClickListener listClickListener) {
         super();
@@ -36,6 +37,17 @@ public class ActiveAdapter extends RecyclerView.Adapter<ListViewHolder> {
         holder.name.setText(list.getName());
         holder.position = position;
         holder.listKey = list.getKey();
+        switch(list.getType()) {
+            case "Office":
+                holder.icon.setImageResource(R.drawable.paperclip);
+                break;
+            case "Clothing":
+                holder.icon.setImageResource(R.drawable.clothing);
+                break;
+            case "Food":
+                holder.icon.setImageResource(R.drawable.food);
+                break;
+        }
     }
 
     @Override

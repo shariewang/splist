@@ -34,14 +34,8 @@ public class MyListAdapter extends RecyclerView.Adapter<MyListAdapter.ViewHolder
     public void onBindViewHolder(final ViewHolder holder, final int position) {
         Item item = items.get(position);
 
-        //if last item, it's the dummy item
-        if (position == getItemCount() - 1) {
-            holder.checkBox.setButtonDrawable(R.drawable.ic_add_white_24dp);
-            holder.item.setHint("Add item");
-        } else {
-            holder.checkBox.setChecked(item.getChecked());
-            holder.item.setText(item.getItem());
-        }
+        holder.checkBox.setChecked(item.getChecked());
+        holder.item.setText(item.getItem());
     }
 
     @Override

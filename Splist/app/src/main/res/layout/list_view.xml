@@ -8,9 +8,9 @@
     <ImageView
         android:id="@+id/icon"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_height="25dp"
         android:layout_weight="1"
-        app:srcCompat="@android:drawable/sym_def_app_icon" />
+        android:background="@color/colorPrimaryDark" />
 
     <TextView
         android:id="@+id/name"

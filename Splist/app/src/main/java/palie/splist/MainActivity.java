@@ -62,7 +62,7 @@ public class MainActivity extends AppCompatActivity implements GroupClickListene
         if (getSupportActionBar() != null) {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
             getSupportActionBar().setHomeButtonEnabled(true);
-            getSupportActionBar().setHomeAsUpIndicator(R.drawable.ic_person_outline_black_24dp);
+            getSupportActionBar().setHomeAsUpIndicator(R.drawable.ic_people_black_24dp);
         }
 
         mGroups = new ArrayList<>();
