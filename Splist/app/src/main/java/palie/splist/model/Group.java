@@ -38,4 +38,8 @@ public class Group {
     public int getMain() {
         return main;
     }
+
+    public int getVibrant() {
+        return vibrant;
+    }
 }

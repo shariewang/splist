@@ -46,7 +46,7 @@ public class UnpaidAdapter extends RecyclerView.Adapter<ListViewHolder> {
                 holder.icon.setImageResource(R.drawable.paperclip);
                 break;
             case "Clothing":
-                holder.icon.setImageResource(R.drawable.clothing);
+                holder.icon.setImageResource(R.drawable.ic_hanger);
                 break;
             case "Food":
                 holder.icon.setImageResource(R.drawable.food);

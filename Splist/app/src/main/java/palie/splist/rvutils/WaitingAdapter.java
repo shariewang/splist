@@ -10,7 +10,6 @@ import java.util.ArrayList;
 import palie.splist.ListClickListener;
 import palie.splist.R;
 import palie.splist.model.List;
-import palie.splist.rvutils.ListViewHolder;
 
 public class WaitingAdapter extends RecyclerView.Adapter<ListViewHolder> {
 

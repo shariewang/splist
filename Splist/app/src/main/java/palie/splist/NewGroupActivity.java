@@ -122,7 +122,7 @@ public class NewGroupActivity extends AppCompatActivity {
                         palette.getDarkMutedColor(palette.getDominantColor(Color.BLUE))));
                 db.getReference("Groups").child(key).setValue(new Group(name, key, members, main, vibrant));
                 String uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
-                db.getReference("Users").child(uid).child("groups").setValue(key);
+                db.getReference("Users").child(uid).child("groups").child(key).setValue(key);
             }
         });
     }

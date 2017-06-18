@@ -8,9 +8,8 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.EditText;
-import android.widget.ImageView;
 
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.FirebaseDatabase;
 
 import java.util.ArrayList;
@@ -19,7 +18,6 @@ import it.feio.android.checklistview.models.CheckListViewItem;
 import it.feio.android.checklistview.models.CheckListView;
 import it.feio.android.checklistview.models.ChecklistManager;
 import it.feio.android.checklistview.exceptions.ViewNotSupportedException;
-import it.feio.android.checklistview.interfaces.CheckListChangedListener;
 import it.feio.android.checklistview.interfaces.Constants;
 import palie.splist.rvutils.MyListAdapter;
 
@@ -31,7 +29,8 @@ public class ListActivity extends AppCompatActivity {
     private ChecklistManager mChecklistManager;
     private CheckListView checklist;
     private boolean editMode;
-    private ImageView icon;
+    private int position;
+    private String listKey;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -43,6 +42,9 @@ public class ListActivity extends AppCompatActivity {
         toolbar.setTitleTextColor(Color.WHITE);
         setSupportActionBar(toolbar);
 
+        position = getIntent().getIntExtra("position", 0);
+        listKey = getIntent().getStringExtra("key");
+        items = new ArrayList<>();
         setUpChecklist();
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
@@ -77,6 +79,13 @@ public class ListActivity extends AppCompatActivity {
                 mChecklistManager.toggleDragHandler(checklist, editMode);
                 return true;
             case R.id.delete_list:
+                String uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
+                db.getReference("Lists").child(listKey).removeValue();
+                db.getReference("Users").child(uid).child(listKey).removeValue();
+                GroupActivity.activeLists.remove(position);
+                GroupActivity.activeAdapter.notifyItemRemoved(position);
+                GroupActivity.activeAdapter.notifyItemRangeRemoved(position, GroupActivity.activeAdapter.getItemCount());
+                finish();
                 return true;
             default:
                 return super.onOptionsItemSelected(item);

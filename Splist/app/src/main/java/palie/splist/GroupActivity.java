@@ -15,11 +15,13 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
 import com.firebase.ui.storage.images.FirebaseImageLoader;
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -41,11 +43,11 @@ public class GroupActivity extends AppCompatActivity implements ListClickListene
     private int position;
     private static FirebaseDatabase db = FirebaseDatabase.getInstance();
     private DatabaseReference mGroup;
-    private ArrayList<List> activeLists, unpaidLists, waitingLists;
-    private ActiveAdapter activeAdapter;
+    private ArrayList<List> unpaidLists, waitingLists;
+    static ArrayList<List> activeLists;
+    static ActiveAdapter activeAdapter;
     private UnpaidAdapter unpaidAdapter;
     private WaitingAdapter waitingAdapter;
-    private int vibrant, main;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -55,10 +57,12 @@ public class GroupActivity extends AppCompatActivity implements ListClickListene
         toolbar.setTitle("");
         setSupportActionBar(toolbar);
 
+        LinearLayout content = (LinearLayout) findViewById(R.id.mycontent);
         ImageView image = (ImageView) findViewById(R.id.image);
         final TextView title = (TextView) findViewById(R.id.title);
         final TextView waitingPayment = (TextView) findViewById(R.id.waiting_payment);
         final TextView lists = (TextView) findViewById(R.id.lists);
+        final TextView waiting = (TextView) findViewById(R.id.waitingText);
         final FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         LinearLayoutManager llm1 = new LinearLayoutManager(this) {
             @Override
@@ -83,6 +87,14 @@ public class GroupActivity extends AppCompatActivity implements ListClickListene
         unpaidLists = new ArrayList<>();
         waitingLists = new ArrayList<>();
 
+        if (unpaidLists.size() == 0) {
+            content.removeView(waitingPayment);
+        }
+
+        if (waitingLists.size() == 0) {
+            content.removeView(waiting);
+        }
+
         groupKey = getIntent().getStringExtra("key");
         position = getIntent().getIntExtra("position", 0);
         fab.setOnClickListener(new View.OnClickListener() {
@@ -106,11 +118,12 @@ public class GroupActivity extends AppCompatActivity implements ListClickListene
                             title.setText(d.getValue(String.class));
                             break;
                         case "vibrant":
-                            vibrant = d.getValue(Integer.class);
+                            int vibrant = d.getValue(Integer.class);
+                            System.out.println("vibrant:"+vibrant);
                             waitingPayment.setTextColor(vibrant);
                             break;
                         case "main":
-                            main = d.getValue(Integer.class);
+                            int main = d.getValue(Integer.class);
                             lists.setTextColor(main);
                             fab.setBackgroundTintList(ColorStateList.valueOf(main));
                             break;
@@ -134,7 +147,7 @@ public class GroupActivity extends AppCompatActivity implements ListClickListene
         activeRV.setLayoutManager(llm2);
         waitingRV.setLayoutManager(llm3);
         unpaidAdapter = new UnpaidAdapter(unpaidLists, getApplicationContext(), this);
-        activeAdapter = new ActiveAdapter(activeLists, getApplicationContext(), this);
+        activeAdapter = new ActiveAdapter(activeLists, groupKey, getApplicationContext(), this);
         waitingAdapter = new WaitingAdapter(waitingLists, getApplicationContext(), this);
         unpaidRV.setAdapter(unpaidAdapter);
         activeRV.setAdapter(activeAdapter);
@@ -258,6 +271,7 @@ public class GroupActivity extends AppCompatActivity implements ListClickListene
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
+        String uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
         switch (item.getItemId()) {
             case R.id.action_add_members:
                 return true;
@@ -266,6 +280,7 @@ public class GroupActivity extends AppCompatActivity implements ListClickListene
                 return true;
             case R.id.delete_group:
                 db.getReference("Groups").child(groupKey).removeValue();
+                db.getReference("Users").child(uid).child(groupKey).removeValue();
                 MainActivity.mGroups.remove(position);
                 MainActivity.groupAdapter.notifyItemRemoved(position);
                 MainActivity.groupAdapter.notifyItemRangeRemoved(position, MainActivity.groupAdapter.getItemCount());

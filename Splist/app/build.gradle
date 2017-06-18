@@ -40,6 +40,7 @@ dependencies {
     compile 'com.firebaseui:firebase-ui-storage:0.6.0'
     compile 'com.android.support:palette-v7:24.2.1'
     testCompile 'junit:junit:4.12'
+    compile 'de.hdodenhof:circleimageview:2.1.0'
     compile project(path: ':checklistview')
 }
 
