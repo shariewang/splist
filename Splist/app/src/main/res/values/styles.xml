@@ -4,7 +4,7 @@
     <style name="AppTheme" parent="Theme.AppCompat.Light">
         <!-- Customize your theme here. -->
         <item name="colorPrimary">@color/colorOffwhite</item>
-        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
+        <item name="colorPrimaryDark">@color/colorOffwhite</item>
         <item name="colorAccent">@color/colorAccent</item>
         <item name="android:windowActivityTransitions">true</item>
         <item name="android:windowSharedElementEnterTransition">
@@ -13,6 +13,10 @@
         <item name="android:windowSharedElementExitTransition">
             @transition/change_image_transform
         </item>
+        <item name="android:windowEnterTransition">@transition/image_flash</item>
+        <item name="android:windowExitTransition">@transition/image_flash</item>
+        <item name="android:windowLightStatusBar">true</item>
+        <item name="android:statusBarColor">@color/colorOffwhite</item>
     </style>
 
     <style name="LoginTheme" parent="Theme.AppCompat.Light.NoActionBar">
@@ -25,12 +29,21 @@
     <style name="AppTheme.NoActionBar">
         <item name="windowActionBar">false</item>
         <item name="windowNoTitle">true</item>
+
+    </style>
+
+    <style name="GroupTheme" parent="AppTheme.NoActionBar">
         <item name="android:windowSharedElementEnterTransition">
             @transition/change_image_transform
         </item>
         <item name="android:windowSharedElementExitTransition">
             @transition/change_image_transform
         </item>
+        <item name="android:windowEnterTransition">@transition/image_flash</item>
+        <item name="android:windowExitTransition">@transition/image_flash</item>
+        <item name="android:fitsSystemWindows">true</item>
+        <item name="android:windowDrawsSystemBarBackgrounds">true</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
     </style>
 
     <style name="AppTheme.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar" />
@@ -43,7 +56,8 @@
         <item name="background">@color/translucentWhite</item>
     </style>
 
-    <style name="NoActionBarTransparentStatus" parent="AppTheme.NoActionBar">
+    <style name="ListTheme" parent="AppTheme.NoActionBar">
+        <item name="android:windowLightStatusBar">false</item>
         <item name="android:statusBarColor">@color/softPurple</item>
     </style>
 

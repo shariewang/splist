@@ -3,7 +3,10 @@ package palie.splist;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.ColorStateList;
+import android.graphics.Color;
+import android.os.Build;
 import android.os.Bundle;
+import android.support.design.widget.AppBarLayout;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
@@ -13,6 +16,8 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.Window;
+import android.view.WindowManager;
 import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -55,10 +60,17 @@ public class GroupActivity extends AppCompatActivity implements ListClickListene
         setContentView(R.layout.activity_group);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         toolbar.setTitle("");
+        toolbar.setPadding(0, 62, 0, 0);
+        int height = getStatusBarHeight();
         setSupportActionBar(toolbar);
 
+        Window w = getWindow();
+        getWindow().getDecorView().setSystemUiVisibility(
+                View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                        | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN);
+
         LinearLayout content = (LinearLayout) findViewById(R.id.mycontent);
-        ImageView image = (ImageView) findViewById(R.id.image);
+        ImageView image = (ImageView) findViewById(R.id.image_flash);
         final TextView title = (TextView) findViewById(R.id.title);
         final TextView waitingPayment = (TextView) findViewById(R.id.waiting_payment);
         final TextView lists = (TextView) findViewById(R.id.lists);
@@ -278,6 +290,8 @@ public class GroupActivity extends AppCompatActivity implements ListClickListene
             case R.id.action_change_photo:
                 //TODO: regenerate palette
                 return true;
+            case R.id.rename:
+                return true;
             case R.id.delete_group:
                 db.getReference("Groups").child(groupKey).removeValue();
                 db.getReference("Users").child(uid).child(groupKey).removeValue();
@@ -289,6 +303,15 @@ public class GroupActivity extends AppCompatActivity implements ListClickListene
             default:
                 return super.onOptionsItemSelected(item);
         }
+    }
+
+    private int getStatusBarHeight() {
+        int result = 0;
+        int resourceId = getResources().getIdentifier("status_bar_height", "dimen", "android");
+        if (resourceId > 0) {
+            result = getResources().getDimensionPixelSize(resourceId);
+        }
+        return result;
     }
 
     @Override

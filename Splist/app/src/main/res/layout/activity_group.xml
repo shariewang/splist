@@ -23,7 +23,7 @@
             app:titleEnabled="false">
 
             <ImageView
-                android:id="@+id/image"
+                android:id="@+id/image_flash"
                 android:layout_width="match_parent"
                 android:layout_height="200dp"
                 android:adjustViewBounds="true"
