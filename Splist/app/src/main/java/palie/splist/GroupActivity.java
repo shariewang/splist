@@ -60,8 +60,7 @@ public class GroupActivity extends AppCompatActivity implements ListClickListene
         setContentView(R.layout.activity_group);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         toolbar.setTitle("");
-        toolbar.setPadding(0, 62, 0, 0);
-        int height = getStatusBarHeight();
+        toolbar.setPadding(0, 60, 0, 0);
         setSupportActionBar(toolbar);
 
         Window w = getWindow();
@@ -317,7 +316,8 @@ public class GroupActivity extends AppCompatActivity implements ListClickListene
     @Override
     public void onListClick(int position, String key, String name) {
         Intent i = new Intent(this, ListActivity.class);
-        i.putExtra("key", key);
+        i.putExtra("listkey", key);
+        i.putExtra("groupkey", groupKey);
         i.putExtra("name", name);
         i.putExtra("position", position);
         startActivity(i);

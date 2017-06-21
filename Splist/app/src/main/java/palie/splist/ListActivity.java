@@ -19,18 +19,20 @@ import it.feio.android.checklistview.models.CheckListView;
 import it.feio.android.checklistview.models.ChecklistManager;
 import it.feio.android.checklistview.exceptions.ViewNotSupportedException;
 import it.feio.android.checklistview.interfaces.Constants;
+import palie.splist.model.Item;
 import palie.splist.rvutils.MyListAdapter;
 
 public class ListActivity extends AppCompatActivity {
 
-    private ArrayList<CheckListViewItem> items;
+    private ArrayList<String> items;
     private static FirebaseDatabase db = FirebaseDatabase.getInstance();
     static MyListAdapter adapter;
     private ChecklistManager mChecklistManager;
     private CheckListView checklist;
+    private String uid;
     private boolean editMode;
     private int position;
-    private String listKey;
+    private String groupKey, listKey;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -42,8 +44,12 @@ public class ListActivity extends AppCompatActivity {
         toolbar.setTitleTextColor(Color.WHITE);
         setSupportActionBar(toolbar);
 
+        uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
+
         position = getIntent().getIntExtra("position", 0);
-        listKey = getIntent().getStringExtra("key");
+        groupKey = getIntent().getStringExtra("groupkey");
+        listKey = getIntent().getStringExtra("listkey");
+
         items = new ArrayList<>();
         setUpChecklist();
 
@@ -71,17 +77,19 @@ public class ListActivity extends AppCompatActivity {
                     checklist.addHintItem();
                 } else {
                     //save just got clicked
+                    items.clear();
                     item.setIcon(R.drawable.ic_edit_white_24dp);
-                    for (int i = 0; i < mChecklistManager.getCount(); i++) { //exclude hint
-                        items.add(checklist.getChildAt(i));
+                    for (int i = 0; i < mChecklistManager.getCount(); i++) {
+                        CheckListViewItem checklistItem = checklist.getChildAt(i);
+                        items.add(checklistItem.getText());
                     }
+                    db.getReference("Lists").child(listKey).child(uid).setValue(items);
                 }
                 mChecklistManager.toggleDragHandler(checklist, editMode);
                 return true;
             case R.id.delete_list:
-                String uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
                 db.getReference("Lists").child(listKey).removeValue();
-                db.getReference("Users").child(uid).child(listKey).removeValue();
+                db.getReference("Groups").child(groupKey).child("active").child(listKey).removeValue();
                 GroupActivity.activeLists.remove(position);
                 GroupActivity.activeAdapter.notifyItemRemoved(position);
                 GroupActivity.activeAdapter.notifyItemRangeRemoved(position, GroupActivity.activeAdapter.getItemCount());

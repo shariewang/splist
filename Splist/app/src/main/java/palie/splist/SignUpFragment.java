@@ -75,7 +75,7 @@ public class SignUpFragment extends Fragment implements View.OnClickListener {
 //                        result = pickResult.getBitmap();
 //                        image.setImageBitmap(result);
 //                    }
-//                }).show(getActivity());
+//                }).show();
                 break;
             case R.id.login:
                 getActivity().getSupportFragmentManager()

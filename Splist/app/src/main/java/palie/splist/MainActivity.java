@@ -125,6 +125,7 @@ public class MainActivity extends AppCompatActivity implements GroupClickListene
             case R.id.signOut:
                 FirebaseAuth.getInstance().signOut();
                 finish();
+                startActivity(new Intent(getApplicationContext(), AuthActivity.class));
                 return true;
             default:
                 return super.onOptionsItemSelected(item);

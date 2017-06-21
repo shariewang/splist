@@ -1,18 +1,25 @@
 package palie.splist;
 
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.support.annotation.NonNull;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.graphics.Palette;
 import android.support.v7.widget.LinearLayoutCompat;
+import android.text.util.Rfc822Tokenizer;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.MultiAutoCompleteTextView;
 
+import com.android.ex.chips.BaseRecipientAdapter;
+import com.android.ex.chips.RecipientEditTextView;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.FirebaseDatabase;
@@ -38,11 +45,18 @@ public class NewGroupActivity extends AppCompatActivity {
     private Bitmap image;
     private static int main, vibrant;
     private ImageView groupImage;
+    private RecipientEditTextView groupMembers;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_new_group);
+
+        if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.READ_CONTACTS)
+                != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this,
+                    new String[]{android.Manifest.permission.READ_CONTACTS}, 0);
+        }
 
         setTitle("New group");
         if (getSupportActionBar() != null) {
@@ -72,6 +86,11 @@ public class NewGroupActivity extends AppCompatActivity {
                 }).show(NewGroupActivity.this);
             }
         });
+        groupMembers = (RecipientEditTextView) findViewById(R.id.groupMembers);
+        groupMembers.setTokenizer(new Rfc822Tokenizer());
+        BaseRecipientAdapter baseRecipientAdapter = new BaseRecipientAdapter(this);
+
+        groupMembers.setAdapter(baseRecipientAdapter);
 
     }
 
