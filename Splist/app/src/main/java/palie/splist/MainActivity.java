@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
+import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
@@ -17,6 +18,7 @@ import android.widget.ImageView;
 
 import com.bumptech.glide.Glide;
 import com.firebase.ui.storage.images.FirebaseImageLoader;
+import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -45,9 +47,10 @@ public class MainActivity extends AppCompatActivity implements GroupClickListene
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+
 //        StorageReference islandRef = FirebaseStorage.getInstance().getReference().child(user.getUid());
+//        System.out.println(user.getUid());
 //        final long ONE_MEGABYTE = 1024 * 1024;
 //        islandRef.getBytes(ONE_MEGABYTE).addOnSuccessListener(new OnSuccessListener<byte[]>() {
 //            @Override
@@ -55,6 +58,12 @@ public class MainActivity extends AppCompatActivity implements GroupClickListene
 //                // Data for "images/island.jpg" is returns, use this as needed
 //                BitmapFactory.Options options = new BitmapFactory.Options();
 //                bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.length, options);
+//                System.out.println(bitmap == null);
+//            }
+//        }).addOnFailureListener(new OnFailureListener() {
+//            @Override
+//            public void onFailure(@NonNull Exception e) {
+//                System.out.println(e);
 //            }
 //        });
 
@@ -62,7 +71,7 @@ public class MainActivity extends AppCompatActivity implements GroupClickListene
         if (getSupportActionBar() != null) {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
             getSupportActionBar().setHomeButtonEnabled(true);
-            getSupportActionBar().setHomeAsUpIndicator(R.drawable.ic_people_black_24dp);
+            getSupportActionBar().setHomeAsUpIndicator(R.drawable.ic_person_outline_black_24dp);
         }
 
         mGroups = new ArrayList<>();

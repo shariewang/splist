@@ -24,6 +24,7 @@ public class GroupAdapter extends RecyclerView.Adapter<GroupAdapter.ViewHolder> 
     private List<Group> mGroups;
     private Context mContext;
     private final GroupClickListener groupClickListener;
+    private final FirebaseStorage storage = FirebaseStorage.getInstance();
 
     public GroupAdapter(List<Group> groups, Context mContext, GroupClickListener groupClickListener) {
         super();
@@ -42,17 +43,17 @@ public class GroupAdapter extends RecyclerView.Adapter<GroupAdapter.ViewHolder> 
     public void onBindViewHolder(ViewHolder holder, int position) {
         Group group = mGroups.get(position);
 
-        System.out.println(group.getMain());
+        String key = group.getKey();
         holder.card.setCardBackgroundColor(group.getMain());
         holder.groupName.setText(group.getName());
         holder.groupMembers.setText(convertToString(group.getNames()));
-        holder.groupKey = group.getKey();
+        holder.groupKey = key;
         holder.position = position;
         ViewCompat.setTransitionName(holder.groupImage, group.getKey());
         ViewCompat.setTransitionName(holder.groupName, group.getKey()+"name");
         Glide.with(mContext)
                 .using(new FirebaseImageLoader())
-                .load(FirebaseStorage.getInstance().getReference().child(group.getKey()))
+                .load(storage.getReference().child(key))
                 .into(holder.groupImage);
     }
 

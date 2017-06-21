@@ -9,8 +9,10 @@ import android.support.v7.widget.LinearLayoutCompat;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -30,13 +32,15 @@ import com.vansuita.pickimage.listeners.IPickResult;
 
 import java.io.ByteArrayOutputStream;
 
+import de.hdodenhof.circleimageview.CircleImageView;
+
 public class SignUpFragment extends Fragment implements View.OnClickListener {
 
-    private String name, email, password;
+    private String name;
     private EditText emailField, passwordField, nameField;
     private final FirebaseAuth mAuth = FirebaseAuth.getInstance();
     private final FirebaseDatabase db = FirebaseDatabase.getInstance();
-    private ImageView image;
+    private CircleImageView image;
     private Bitmap result;
 
     public SignUpFragment() {
@@ -52,7 +56,12 @@ public class SignUpFragment extends Fragment implements View.OnClickListener {
         emailField = (EditText) v.findViewById(R.id.email);
         passwordField = (EditText) v.findViewById(R.id.password);
         nameField = (EditText) v.findViewById(R.id.name);
-        image = (ImageView) v.findViewById(R.id.profilepic);
+        image = (CircleImageView) v.findViewById(R.id.profilepic);
+        TextView login = (TextView) v.findViewById(R.id.login);
+        Button register = (Button) v.findViewById(R.id.register_button);
+        register.setOnClickListener(this);
+        image.setOnClickListener(this);
+        login.setOnClickListener(this);
 
         return v;
     }
@@ -61,27 +70,27 @@ public class SignUpFragment extends Fragment implements View.OnClickListener {
     public void onClick(View view) {
         switch (view.getId()) {
             case R.id.profilepic:
-//                PickSetup setup = new PickSetup()
-//                        .setPickTypes(EPickType.CAMERA, EPickType.GALLERY)
-//                        .setCameraButtonText("Take a photo")
-//                        .setGalleryButtonText("Choose from gallery")
-//                        .setSystemDialog(true);
-//                PickImageDialog.build(setup).setOnPickResult(new IPickResult() {
-//                    @Override
-//                    public void onPickResult(PickResult pickResult) {
-//                        result = pickResult.getBitmap();
-//                        image.setImageBitmap(result);
-//                    }
-//                }).show();
+                PickSetup setup = new PickSetup()
+                        .setPickTypes(EPickType.CAMERA, EPickType.GALLERY)
+                        .setCameraButtonText("Take a photo")
+                        .setGalleryButtonText("Choose from gallery")
+                        .setSystemDialog(true);
+                PickImageDialog.build(setup).setOnPickResult(new IPickResult() {
+                    @Override
+                    public void onPickResult(PickResult pickResult) {
+                        result = pickResult.getBitmap();
+                        image.setImageBitmap(result);
+                    }
+                }).show(getFragmentManager());
                 break;
             case R.id.login:
-                getActivity().getSupportFragmentManager()
-                        .beginTransaction().replace(R.id.content, new LoginFragment()).commit();
+                getActivity().getSupportFragmentManager().
+                        beginTransaction().replace(R.id.content, new LoginFragment()).commit();
                 break;
             case R.id.register_button:
                 name = nameField.getText().toString();
-                email = emailField.getText().toString();
-                password = passwordField.getText().toString();
+                String email = emailField.getText().toString();
+                String password = passwordField.getText().toString();
                 register(email, password);
                 break;
         }
@@ -95,18 +104,18 @@ public class SignUpFragment extends Fragment implements View.OnClickListener {
                         if (!task.isSuccessful()) {
                             Toast.makeText(getActivity(), "Registration failed", Toast.LENGTH_SHORT).show();
                         } else {
-                            String uid = mAuth.getCurrentUser().getUid();
                             DatabaseReference userRef = db.getReference("Users");
-//                            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-//                            result.compress(Bitmap.CompressFormat.JPEG, 100, baos);
-//                            byte[] data = baos.toByteArray();
-//                            UploadTask uploadTask = FirebaseStorage.getInstance().getReference().child(uid).putBytes(data);
-//                            uploadTask.addOnFailureListener(new OnFailureListener() {
-//                                @Override
-//                                public void onFailure(@NonNull Exception e) {
-//                                    //TODO: Handle unsuccessful uploads
-//                                }
-//                            });
+                            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                            result.compress(Bitmap.CompressFormat.JPEG, 100, baos);
+                            byte[] data = baos.toByteArray();
+                            String uid = mAuth.getCurrentUser().getUid();
+                            UploadTask uploadTask = FirebaseStorage.getInstance().getReference().child(uid).putBytes(data);
+                            uploadTask.addOnFailureListener(new OnFailureListener() {
+                                @Override
+                                public void onFailure(@NonNull Exception e) {
+                                    System.out.println("Upload failed");
+                                }
+                            });
                             userRef.child(uid).child("name").setValue(name);
                             userRef.child(uid).child("email").setValue(email);
                             startActivity(new Intent(getActivity(), MainActivity.class));
