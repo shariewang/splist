@@ -12,6 +12,8 @@ import android.widget.TextView;
 import com.bumptech.glide.Glide;
 import com.firebase.ui.storage.images.FirebaseImageLoader;
 import com.google.firebase.storage.FirebaseStorage;
+
+import java.util.ArrayList;
 import java.util.List;
 import palie.splist.GroupClickListener;
 import palie.splist.R;
@@ -43,7 +45,7 @@ public class GroupAdapter extends RecyclerView.Adapter<GroupAdapter.ViewHolder> 
         System.out.println(group.getMain());
         holder.card.setCardBackgroundColor(group.getMain());
         holder.groupName.setText(group.getName());
-        holder.groupMembers.setText(group.getMembers());
+        holder.groupMembers.setText(convertToString(group.getNames()));
         holder.groupKey = group.getKey();
         holder.position = position;
         ViewCompat.setTransitionName(holder.groupImage, group.getKey());
@@ -81,4 +83,15 @@ public class GroupAdapter extends RecyclerView.Adapter<GroupAdapter.ViewHolder> 
             });
         }
     }
+
+    private String convertToString(ArrayList<String> names) {
+        if (names.size() == 1) {
+            return names.get(0);
+        } else if (names.size() == 2) {
+            return names.get(0) + " and " + names.get(1);
+        } else {
+            return names.get(0) + ", " + names.get(1) + ", and " + (names.size() - 2) + " others";
+        }
+    }
+
 }

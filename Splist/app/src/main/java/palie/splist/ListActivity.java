@@ -25,7 +25,7 @@ import palie.splist.rvutils.MyListAdapter;
 public class ListActivity extends AppCompatActivity {
 
     private ArrayList<String> items;
-    private static FirebaseDatabase db = FirebaseDatabase.getInstance();
+    private final FirebaseDatabase db = FirebaseDatabase.getInstance();
     static MyListAdapter adapter;
     private ChecklistManager mChecklistManager;
     private CheckListView checklist;

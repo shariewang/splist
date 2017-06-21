@@ -34,8 +34,8 @@ public class SignUpFragment extends Fragment implements View.OnClickListener {
 
     private String name, email, password;
     private EditText emailField, passwordField, nameField;
-    private FirebaseAuth mAuth;
-    private FirebaseDatabase db;
+    private final FirebaseAuth mAuth = FirebaseAuth.getInstance();
+    private final FirebaseDatabase db = FirebaseDatabase.getInstance();
     private ImageView image;
     private Bitmap result;
 
@@ -48,9 +48,6 @@ public class SignUpFragment extends Fragment implements View.OnClickListener {
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         View v = inflater.inflate(R.layout.fragment_sign_up, container, false);
-
-        mAuth = FirebaseAuth.getInstance();
-        db = FirebaseDatabase.getInstance();
 
         emailField = (EditText) v.findViewById(R.id.email);
         passwordField = (EditText) v.findViewById(R.id.password);

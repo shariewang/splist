@@ -20,6 +20,7 @@ import android.widget.MultiAutoCompleteTextView;
 
 import com.android.ex.chips.BaseRecipientAdapter;
 import com.android.ex.chips.RecipientEditTextView;
+import com.android.ex.chips.recipientchip.DrawableRecipientChip;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.FirebaseDatabase;
@@ -32,6 +33,7 @@ import com.vansuita.pickimage.enums.EPickType;
 import com.vansuita.pickimage.listeners.IPickResult;
 
 import java.io.ByteArrayOutputStream;
+import java.util.ArrayList;
 
 import palie.splist.model.Group;
 
@@ -39,8 +41,8 @@ import palie.splist.model.Group;
 public class NewGroupActivity extends AppCompatActivity {
 
     private EditText groupName;
-    private static FirebaseDatabase db = FirebaseDatabase.getInstance();
-    private static FirebaseStorage storage = FirebaseStorage.getInstance();
+    private final FirebaseDatabase db = FirebaseDatabase.getInstance();
+    private final FirebaseStorage storage = FirebaseStorage.getInstance();
     //TODO: set default
     private Bitmap image;
     private static int main, vibrant;
@@ -89,9 +91,7 @@ public class NewGroupActivity extends AppCompatActivity {
         groupMembers = (RecipientEditTextView) findViewById(R.id.groupMembers);
         groupMembers.setTokenizer(new Rfc822Tokenizer());
         BaseRecipientAdapter baseRecipientAdapter = new BaseRecipientAdapter(this);
-
         groupMembers.setAdapter(baseRecipientAdapter);
-
     }
 
     @Override
@@ -110,10 +110,15 @@ public class NewGroupActivity extends AppCompatActivity {
             case R.id.save:
                 //TODO: if null, assert that there needs to be at least one member or something
                 String name = groupName.getText().toString();
-                String members = "Persons";
                 String key = db.getReference("Groups").push().getKey();
+                ArrayList<String> emails = new ArrayList<>();
+                ArrayList<String> names = new ArrayList<>();
+                for (DrawableRecipientChip d : groupMembers.getRecipients()) {
+                    emails.add(d.getValue().toString());
+                    names.add(d.getDisplay().toString());
+                }
 
-                createPaletteAsyncAndWriteDB(image, name, key, members);
+                createPaletteAsyncAndWriteDB(image, name, key, emails, names);
                 ByteArrayOutputStream baos = new ByteArrayOutputStream();
                 image.compress(Bitmap.CompressFormat.JPEG, 100, baos);
                 byte[] data = baos.toByteArray();
@@ -131,7 +136,8 @@ public class NewGroupActivity extends AppCompatActivity {
         }
     }
 
-    public void createPaletteAsyncAndWriteDB(Bitmap bitmap, final String name, final String key, final String members) {
+    public void createPaletteAsyncAndWriteDB(Bitmap bitmap, final String name, final String key,
+                                             final ArrayList<String> emails, final ArrayList<String> names) {
         Palette.from(bitmap).generate(new Palette.PaletteAsyncListener() {
             @Override
             public void onGenerated(Palette palette) {
@@ -139,7 +145,7 @@ public class NewGroupActivity extends AppCompatActivity {
                         palette.getLightVibrantColor(palette.getDarkVibrantColor(Color.BLUE)));
                 main = palette.getMutedColor(palette.getLightMutedColor(
                         palette.getDarkMutedColor(palette.getDominantColor(Color.BLUE))));
-                db.getReference("Groups").child(key).setValue(new Group(name, key, members, main, vibrant));
+                db.getReference("Groups").child(key).setValue(new Group(name, key, emails, names, main, vibrant));
                 String uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
                 db.getReference("Users").child(uid).child("groups").child(key).setValue(key);
             }

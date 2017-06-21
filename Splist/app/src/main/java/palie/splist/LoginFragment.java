@@ -19,7 +19,7 @@ import com.google.firebase.auth.FirebaseAuth;
 
 public class LoginFragment extends Fragment implements View.OnClickListener {
 
-    private FirebaseAuth mAuth;
+    private final FirebaseAuth mAuth = FirebaseAuth.getInstance();
     private String email, password;
     private EditText emailField, passwordField;
     private TextView forgotPass, register;
@@ -33,7 +33,6 @@ public class LoginFragment extends Fragment implements View.OnClickListener {
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         View v = inflater.inflate(R.layout.fragment_login, container, false);
-        mAuth = FirebaseAuth.getInstance();
 
         emailField = (EditText) v.findViewById(R.id.email);
         passwordField = (EditText) v.findViewById(R.id.password);

@@ -46,7 +46,7 @@ public class GroupActivity extends AppCompatActivity implements ListClickListene
 
     private String groupKey;
     private int position;
-    private static FirebaseDatabase db = FirebaseDatabase.getInstance();
+    private final FirebaseDatabase db = FirebaseDatabase.getInstance();
     private DatabaseReference mGroup;
     private ArrayList<List> unpaidLists, waitingLists;
     static ArrayList<List> activeLists;
