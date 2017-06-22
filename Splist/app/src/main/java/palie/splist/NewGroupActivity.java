@@ -16,14 +16,15 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageView;
-import android.widget.MultiAutoCompleteTextView;
-
 import com.android.ex.chips.BaseRecipientAdapter;
 import com.android.ex.chips.RecipientEditTextView;
 import com.android.ex.chips.recipientchip.DrawableRecipientChip;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.UploadTask;
 import com.vansuita.pickimage.bean.PickResult;
@@ -31,12 +32,9 @@ import com.vansuita.pickimage.bundle.PickSetup;
 import com.vansuita.pickimage.dialog.PickImageDialog;
 import com.vansuita.pickimage.enums.EPickType;
 import com.vansuita.pickimage.listeners.IPickResult;
-
 import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
-
 import palie.splist.model.Group;
-
 
 public class NewGroupActivity extends AppCompatActivity {
 
@@ -77,8 +75,7 @@ public class NewGroupActivity extends AppCompatActivity {
                         .setPickTypes(EPickType.CAMERA, EPickType.GALLERY)
                         .setCameraButtonText("Take a photo")
                         .setGalleryButtonText("Choose from gallery")
-                        .setSystemDialog(true)
-                        .setButtonOrientation(LinearLayoutCompat.VERTICAL);
+                        .setSystemDialog(true);
                 PickImageDialog.build(setup).setOnPickResult(new IPickResult() {
                     @Override
                     public void onPickResult(PickResult pickResult) {
@@ -114,8 +111,10 @@ public class NewGroupActivity extends AppCompatActivity {
                 ArrayList<String> emails = new ArrayList<>();
                 ArrayList<String> names = new ArrayList<>();
                 for (DrawableRecipientChip d : groupMembers.getRecipients()) {
-                    emails.add(d.getValue().toString());
+                    String email = d.getValue().toString();
+                    emails.add(email);
                     names.add(d.getDisplay().toString());
+                    findMemberAndAdd(email, key);
                 }
 
                 createPaletteAsyncAndWriteDB(image, name, key, emails, names);
@@ -129,6 +128,7 @@ public class NewGroupActivity extends AppCompatActivity {
                         //TODO: Handle unsuccessful uploads
                     }
                 });
+
                 finish();
                 return true;
             default:
@@ -136,7 +136,7 @@ public class NewGroupActivity extends AppCompatActivity {
         }
     }
 
-    public void createPaletteAsyncAndWriteDB(Bitmap bitmap, final String name, final String key,
+    private void createPaletteAsyncAndWriteDB(Bitmap bitmap, final String name, final String key,
                                              final ArrayList<String> emails, final ArrayList<String> names) {
         Palette.from(bitmap).generate(new Palette.PaletteAsyncListener() {
             @Override
@@ -148,6 +148,21 @@ public class NewGroupActivity extends AppCompatActivity {
                 db.getReference("Groups").child(key).setValue(new Group(name, key, emails, names, main, vibrant));
                 String uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
                 db.getReference("Users").child(uid).child("groups").child(key).setValue(key);
+            }
+        });
+    }
+
+    private void findMemberAndAdd(String email, String groupKey) {
+        db.getReference("Users").orderByChild("email").startAt(email).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                String uid = dataSnapshot.getKey();
+                db.getReference("Users").child(uid).child("groups").child(uid).setValue(uid);
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
             }
         });
     }
