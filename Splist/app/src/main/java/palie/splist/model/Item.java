@@ -16,8 +16,16 @@ public class Item {
         return item;
     }
 
+    public void setItem(String item) {
+        this.item = item;
+    }
+
     public boolean getChecked() {
         return checked;
+    }
+
+    public void setChecked(boolean checked) {
+        this.checked = checked;
     }
 
     public void toggle() {

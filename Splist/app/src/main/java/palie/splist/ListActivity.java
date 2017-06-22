@@ -4,14 +4,30 @@ import android.graphics.Color;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.CheckBox;
+import android.widget.ListView;
+import android.widget.TextView;
 
+import com.bumptech.glide.Glide;
+import com.firebase.ui.database.FirebaseIndexRecyclerAdapter;
+import com.firebase.ui.database.FirebaseListAdapter;
+import com.firebase.ui.database.FirebaseRecyclerAdapter;
+import com.firebase.ui.storage.images.FirebaseImageLoader;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.storage.FirebaseStorage;
 
+import java.lang.reflect.Member;
 import java.util.ArrayList;
 
 import it.feio.android.checklistview.models.CheckListViewItem;
@@ -20,19 +36,22 @@ import it.feio.android.checklistview.models.ChecklistManager;
 import it.feio.android.checklistview.exceptions.ViewNotSupportedException;
 import it.feio.android.checklistview.interfaces.Constants;
 import palie.splist.model.Item;
-import palie.splist.rvutils.MyListAdapter;
+import palie.splist.model.MemberList;
+import palie.splist.rvutils.MemberHolder;
 
 public class ListActivity extends AppCompatActivity {
 
-    private ArrayList<String> items;
     private final FirebaseDatabase db = FirebaseDatabase.getInstance();
-    static MyListAdapter adapter;
+    private final FirebaseStorage storage = FirebaseStorage.getInstance();
+    private ArrayList<Item> items;
     private ChecklistManager mChecklistManager;
     private CheckListView checklist;
     private String uid;
     private boolean editMode;
     private int position;
     private String groupKey, listKey;
+    private FirebaseIndexRecyclerAdapter<MemberList, MemberHolder> mAdapter;
+    private RecyclerView members;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -45,13 +64,40 @@ public class ListActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
 
         uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
-
         position = getIntent().getIntExtra("position", 0);
         groupKey = getIntent().getStringExtra("groupkey");
         listKey = getIntent().getStringExtra("listkey");
-
-        items = new ArrayList<>();
         setUpChecklist();
+        items = new ArrayList<>();
+
+        members = (RecyclerView) findViewById(R.id.members);
+        members.setLayoutManager(new LinearLayoutManager(this));
+        DatabaseReference source = db.getReference("Items");
+        DatabaseReference ref = db.getReference("Lists").child(listKey).child("items");
+        mAdapter = new FirebaseIndexRecyclerAdapter<MemberList, MemberHolder>(
+                MemberList.class, R.layout.member_list_card, MemberHolder.class, ref, source) {
+            @Override
+            public void populateViewHolder(MemberHolder holder, MemberList memberlist, int position) {
+                Glide.with(getApplicationContext()).using(new FirebaseImageLoader())
+                        .load(storage.getReference().child(uid)).into(holder.getImageView());
+                holder.getTextView().setText(memberlist.getName());
+
+                ListView list = holder.getListView();
+                DatabaseReference dbRef = db.getReference("Items").child(uid).child("items");
+                FirebaseListAdapter<Item> adapter = new FirebaseListAdapter<Item>(ListActivity.this, Item.class,
+                        R.layout.checkbox_guest, dbRef) {
+                    @Override
+                    protected void populateView(View view, Item item, int i) {
+                        CheckBox cb = (CheckBox) view.findViewById(R.id.checkBox);
+                        TextView name = (TextView) view.findViewById(R.id.itemName);
+                        cb.setChecked(item.getChecked());
+                        name.setText(item.getItem());
+                    }
+                };
+                list.setAdapter(adapter);
+            }
+        };
+        members.setAdapter(mAdapter);
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
@@ -81,9 +127,24 @@ public class ListActivity extends AppCompatActivity {
                     item.setIcon(R.drawable.ic_edit_white_24dp);
                     for (int i = 0; i < mChecklistManager.getCount(); i++) {
                         CheckListViewItem checklistItem = checklist.getChildAt(i);
-                        items.add(checklistItem.getText());
+                        items.add(new Item(checklistItem.getText()));
                     }
-                    db.getReference("Lists").child(listKey).child(uid).setValue(items);
+
+                    //final String itemKey = db.getReference("Items").push().getKey();
+                    db.getReference("Lists").child(listKey).child("items").child(uid).setValue(uid);
+                    //reads name from firebase
+                    db.getReference("Users").child(uid).child("name").addListenerForSingleValueEvent(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(DataSnapshot dataSnapshot) {
+                            String name = dataSnapshot.getValue(String.class);
+                            db.getReference("Items").child(uid).setValue(new MemberList(name, items));
+                        }
+
+                        @Override
+                        public void onCancelled(DatabaseError databaseError) {
+
+                        }
+                    });
                 }
                 mChecklistManager.toggleDragHandler(checklist, editMode);
                 return true;
