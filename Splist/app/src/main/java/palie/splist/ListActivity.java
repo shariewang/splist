@@ -7,6 +7,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -81,7 +82,6 @@ public class ListActivity extends AppCompatActivity {
                 Glide.with(getApplicationContext()).using(new FirebaseImageLoader())
                         .load(storage.getReference().child(uid)).into(holder.getImageView());
                 holder.getTextView().setText(memberlist.getName());
-
                 ListView list = holder.getListView();
                 DatabaseReference dbRef = db.getReference("Items").child(uid).child("items");
                 FirebaseListAdapter<Item> adapter = new FirebaseListAdapter<Item>(ListActivity.this, Item.class,
@@ -90,6 +90,7 @@ public class ListActivity extends AppCompatActivity {
                     protected void populateView(View view, Item item, int i) {
                         CheckBox cb = (CheckBox) view.findViewById(R.id.checkBox);
                         TextView name = (TextView) view.findViewById(R.id.itemName);
+                        System.out.println(item.getItem());
                         cb.setChecked(item.getChecked());
                         name.setText(item.getItem());
                     }
@@ -130,7 +131,6 @@ public class ListActivity extends AppCompatActivity {
                         items.add(new Item(checklistItem.getText()));
                     }
 
-                    //final String itemKey = db.getReference("Items").push().getKey();
                     db.getReference("Lists").child(listKey).child("items").child(uid).setValue(uid);
                     //reads name from firebase
                     db.getReference("Users").child(uid).child("name").addListenerForSingleValueEvent(new ValueEventListener() {
