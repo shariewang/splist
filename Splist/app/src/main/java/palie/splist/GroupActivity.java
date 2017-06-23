@@ -266,11 +266,6 @@ public class GroupActivity extends AppCompatActivity implements ListClickListene
                         dialogInterface.cancel();
                     }
                 });
-
-//        ArrayAdapter<CharSequence> colorAdapter = ArrayAdapter
-//                .createFromResource(this, R.array.list_colors, android.R.layout.simple_spinner_item);
-//        colorAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-//        ((Spinner) view.findViewById(R.id.color)).setAdapter(colorAdapter);
         return builder.create();
     }
 

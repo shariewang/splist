@@ -38,6 +38,7 @@ import it.feio.android.checklistview.exceptions.ViewNotSupportedException;
 import it.feio.android.checklistview.interfaces.Constants;
 import palie.splist.model.Item;
 import palie.splist.model.MemberList;
+import palie.splist.rvutils.ItemAdapter;
 import palie.splist.rvutils.MemberHolder;
 
 public class ListActivity extends AppCompatActivity {
@@ -50,9 +51,10 @@ public class ListActivity extends AppCompatActivity {
     private String uid;
     private boolean editMode;
     private int position;
-    private String groupKey, listKey;
-    private FirebaseIndexRecyclerAdapter<MemberList, MemberHolder> mAdapter;
+    private String groupKey, listKey, myItemKey;
+    private FirebaseRecyclerAdapter<MemberList, MemberHolder> mAdapter;
     private RecyclerView members;
+    private ItemAdapter adapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -69,36 +71,32 @@ public class ListActivity extends AppCompatActivity {
         groupKey = getIntent().getStringExtra("groupkey");
         listKey = getIntent().getStringExtra("listkey");
         setUpChecklist();
-        items = new ArrayList<>();
 
+        items = new ArrayList<>();
         members = (RecyclerView) findViewById(R.id.members);
         members.setLayoutManager(new LinearLayoutManager(this));
-        DatabaseReference source = db.getReference("Items");
         DatabaseReference ref = db.getReference("Lists").child(listKey).child("items");
-        mAdapter = new FirebaseIndexRecyclerAdapter<MemberList, MemberHolder>(
-                MemberList.class, R.layout.member_list_card, MemberHolder.class, ref, source) {
+        mAdapter = new FirebaseRecyclerAdapter<MemberList, MemberHolder>(
+                MemberList.class, R.layout.member_list_card, MemberHolder.class, ref) {
             @Override
             public void populateViewHolder(MemberHolder holder, MemberList memberlist, int position) {
                 Glide.with(getApplicationContext()).using(new FirebaseImageLoader())
                         .load(storage.getReference().child(uid)).into(holder.getImageView());
                 holder.getTextView().setText(memberlist.getName());
-                ListView list = holder.getListView();
-                DatabaseReference dbRef = db.getReference("Items").child(uid).child("items");
-                FirebaseListAdapter<Item> adapter = new FirebaseListAdapter<Item>(ListActivity.this, Item.class,
-                        R.layout.checkbox_guest, dbRef) {
+
+                RecyclerView list = holder.getListView();
+                list.setLayoutManager(new LinearLayoutManager(ListActivity.this) {
                     @Override
-                    protected void populateView(View view, Item item, int i) {
-                        CheckBox cb = (CheckBox) view.findViewById(R.id.checkBox);
-                        TextView name = (TextView) view.findViewById(R.id.itemName);
-                        System.out.println(item.getItem());
-                        cb.setChecked(item.getChecked());
-                        name.setText(item.getItem());
+                    public boolean canScrollVertically() {
+                        return false;
                     }
-                };
+                });
+                adapter = new ItemAdapter(memberlist.getItems(), getApplicationContext());
                 list.setAdapter(adapter);
             }
         };
         members.setAdapter(mAdapter);
+        mAdapter.notifyDataSetChanged();
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
@@ -131,13 +129,12 @@ public class ListActivity extends AppCompatActivity {
                         items.add(new Item(checklistItem.getText()));
                     }
 
-                    db.getReference("Lists").child(listKey).child("items").child(uid).setValue(uid);
                     //reads name from firebase
                     db.getReference("Users").child(uid).child("name").addListenerForSingleValueEvent(new ValueEventListener() {
                         @Override
                         public void onDataChange(DataSnapshot dataSnapshot) {
                             String name = dataSnapshot.getValue(String.class);
-                            db.getReference("Items").child(uid).setValue(new MemberList(name, items));
+                            db.getReference("Lists").child(listKey).child("items").child(uid).setValue(new MemberList(name, items));
                         }
 
                         @Override
@@ -183,4 +180,5 @@ public class ListActivity extends AppCompatActivity {
         mChecklistManager.toggleDragHandler(checklist, true);
         mChecklistManager.toggleDragHandler(checklist, false);
     }
+
 }

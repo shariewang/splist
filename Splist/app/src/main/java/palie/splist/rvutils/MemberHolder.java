@@ -12,13 +12,13 @@ public class MemberHolder extends RecyclerView.ViewHolder {
 
     private final ImageView image;
     private final TextView name;
-    private final ListView listView;
+    private final RecyclerView listView;
 
     public MemberHolder(View itemView) {
         super(itemView);
         image = (ImageView) itemView.findViewById(R.id.image);
         name = (TextView) itemView.findViewById(R.id.name);
-        listView = (ListView) itemView.findViewById(R.id.items);
+        listView = (RecyclerView) itemView.findViewById(R.id.items);
     }
 
     public ImageView getImageView() {
@@ -29,7 +29,7 @@ public class MemberHolder extends RecyclerView.ViewHolder {
         return name;
     }
 
-    public ListView getListView() {
+    public RecyclerView getListView() {
         return listView;
     }
 }
