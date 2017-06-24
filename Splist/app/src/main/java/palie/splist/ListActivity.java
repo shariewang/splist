@@ -7,17 +7,11 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
-import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.CheckBox;
-import android.widget.ListView;
-import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
-import com.firebase.ui.database.FirebaseIndexRecyclerAdapter;
-import com.firebase.ui.database.FirebaseListAdapter;
 import com.firebase.ui.database.FirebaseRecyclerAdapter;
 import com.firebase.ui.storage.images.FirebaseImageLoader;
 import com.google.firebase.auth.FirebaseAuth;
@@ -28,14 +22,8 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
 
-import java.lang.reflect.Member;
 import java.util.ArrayList;
 
-import it.feio.android.checklistview.models.CheckListViewItem;
-import it.feio.android.checklistview.models.CheckListView;
-import it.feio.android.checklistview.models.ChecklistManager;
-import it.feio.android.checklistview.exceptions.ViewNotSupportedException;
-import it.feio.android.checklistview.interfaces.Constants;
 import palie.splist.model.Item;
 import palie.splist.model.MemberList;
 import palie.splist.rvutils.ItemAdapter;
