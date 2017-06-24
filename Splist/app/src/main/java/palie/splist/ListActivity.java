@@ -35,7 +35,6 @@ public class ListActivity extends AppCompatActivity {
     private final FirebaseDatabase db = FirebaseDatabase.getInstance();
     private final FirebaseStorage storage = FirebaseStorage.getInstance();
     private String uid;
-    private int position;
     private String groupKey, listKey;
     private ItemAdapter adapter;
     private MyItemAdapter myItemAdapter;
@@ -54,7 +53,6 @@ public class ListActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
 
         uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
-        position = getIntent().getIntExtra("position", 0);
         groupKey = getIntent().getStringExtra("groupkey");
         listKey = getIntent().getStringExtra("listkey");
 
@@ -126,9 +124,6 @@ public class ListActivity extends AppCompatActivity {
             case R.id.delete_list:
                 db.getReference("Lists").child(listKey).removeValue();
                 db.getReference("Groups").child(groupKey).child("active").child(listKey).removeValue();
-                GroupActivity.activeLists.remove(position);
-                GroupActivity.activeAdapter.notifyItemRemoved(position);
-                GroupActivity.activeAdapter.notifyItemRangeRemoved(position, GroupActivity.activeAdapter.getItemCount());
                 finish();
                 return true;
             default:

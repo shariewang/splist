@@ -3,10 +3,7 @@ package palie.splist;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.ColorStateList;
-import android.graphics.Color;
-import android.os.Build;
 import android.os.Bundle;
-import android.support.design.widget.AppBarLayout;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
@@ -17,7 +14,6 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.Window;
-import android.view.WindowManager;
 import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -25,6 +21,7 @@ import android.widget.Spinner;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
+import com.firebase.ui.database.FirebaseIndexRecyclerAdapter;
 import com.firebase.ui.storage.images.FirebaseImageLoader;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.ChildEventListener;
@@ -38,11 +35,11 @@ import com.google.firebase.storage.FirebaseStorage;
 import java.util.ArrayList;
 
 import palie.splist.model.List;
-import palie.splist.rvutils.ActiveAdapter;
+import palie.splist.rvutils.ListViewHolder;
 import palie.splist.rvutils.UnpaidAdapter;
 import palie.splist.rvutils.WaitingAdapter;
 
-public class GroupActivity extends AppCompatActivity implements ListClickListener {
+public class GroupActivity extends AppCompatActivity {
 
     private String groupKey;
     private int position;
@@ -50,7 +47,6 @@ public class GroupActivity extends AppCompatActivity implements ListClickListene
     private DatabaseReference mGroup;
     private ArrayList<List> unpaidLists, waitingLists;
     static ArrayList<List> activeLists;
-    static ActiveAdapter activeAdapter;
     private UnpaidAdapter unpaidAdapter;
     private WaitingAdapter waitingAdapter;
 
@@ -94,7 +90,6 @@ public class GroupActivity extends AppCompatActivity implements ListClickListene
             }
         };
 
-        activeLists = new ArrayList<>();
         unpaidLists = new ArrayList<>();
         waitingLists = new ArrayList<>();
 
@@ -118,7 +113,6 @@ public class GroupActivity extends AppCompatActivity implements ListClickListene
         Glide.with(this).using(new FirebaseImageLoader())
                 .load(FirebaseStorage.getInstance().getReference().child(groupKey)).into(image);
 
-        //TODO: change model class and firebase
         mGroup = db.getReference("Groups").child(groupKey);
         mGroup.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
@@ -148,20 +142,57 @@ public class GroupActivity extends AppCompatActivity implements ListClickListene
             }
         });
         handleListListeners(1);
-        handleListListeners(2);
         handleListListeners(3);
 
-        RecyclerView unpaidRV = (RecyclerView) findViewById(R.id.unpaid);
         RecyclerView activeRV = (RecyclerView) findViewById(R.id.active);
-        RecyclerView waitingRV = (RecyclerView) findViewById(R.id.waiting);
-        unpaidRV.setLayoutManager(llm1);
         activeRV.setLayoutManager(llm2);
+        DatabaseReference active = db.getReference("Groups").child(groupKey).child("active");
+        DatabaseReference source = db.getReference("Lists");
+        FirebaseIndexRecyclerAdapter<List, ListViewHolder> adapter = new FirebaseIndexRecyclerAdapter<List, ListViewHolder>
+                        (List.class, R.layout.list_view, ListViewHolder.class, active, source) {
+            @Override
+            protected void populateViewHolder(final ListViewHolder holder, final List list, final int i) {
+                FirebaseDatabase.getInstance().getReference("Groups").
+                        child(groupKey).child("main").addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(DataSnapshot dataSnapshot) {
+                        holder.getIcon().setFillColor(dataSnapshot.getValue(Integer.class));
+                    }
+
+                    @Override
+                    public void onCancelled(DatabaseError databaseError) {
+
+                    }
+                });
+                holder.getName().setText(list.getName());
+                switch(list.getType()) {
+                    case "Office":
+                        holder.getIcon().setImageResource(R.drawable.paperclip);
+                        break;
+                    case "Clothing":
+                        holder.getIcon().setImageResource(R.drawable.ic_hanger);
+                        break;
+                    case "Food":
+                        holder.getIcon().setImageResource(R.drawable.food);
+                        break;
+                }
+                holder.getName().setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        onListClick(list.getKey(), list.getName());
+                    }
+                });
+            }
+        };
+        activeRV.setAdapter(adapter);
+
+        RecyclerView waitingRV = (RecyclerView) findViewById(R.id.waiting);
+        RecyclerView unpaidRV = (RecyclerView) findViewById(R.id.unpaid);
+        unpaidRV.setLayoutManager(llm1);
         waitingRV.setLayoutManager(llm3);
-        unpaidAdapter = new UnpaidAdapter(unpaidLists, getApplicationContext(), this);
-        activeAdapter = new ActiveAdapter(activeLists, groupKey, getApplicationContext(), this);
-        waitingAdapter = new WaitingAdapter(waitingLists, getApplicationContext(), this);
+        unpaidAdapter = new UnpaidAdapter(unpaidLists, getApplicationContext());
+        waitingAdapter = new WaitingAdapter(waitingLists, getApplicationContext());
         unpaidRV.setAdapter(unpaidAdapter);
-        activeRV.setAdapter(activeAdapter);
         waitingRV.setAdapter(waitingAdapter);
     }
 
@@ -176,10 +207,6 @@ public class GroupActivity extends AppCompatActivity implements ListClickListene
                             case 1: //unpaid
                                 unpaidLists.add(list);
                                 unpaidAdapter.notifyItemInserted(unpaidLists.size() - 1);
-                                break;
-                            case 2: //active
-                                activeLists.add(list);
-                                activeAdapter.notifyItemInserted(activeLists.size() - 1);
                                 break;
                             case 3: //waiting
                                 waitingLists.add(list);
@@ -299,22 +326,11 @@ public class GroupActivity extends AppCompatActivity implements ListClickListene
         }
     }
 
-    private int getStatusBarHeight() {
-        int result = 0;
-        int resourceId = getResources().getIdentifier("status_bar_height", "dimen", "android");
-        if (resourceId > 0) {
-            result = getResources().getDimensionPixelSize(resourceId);
-        }
-        return result;
-    }
-
-    @Override
-    public void onListClick(int position, String key, String name) {
+    public void onListClick(String key, String name) {
         Intent i = new Intent(this, ListActivity.class);
         i.putExtra("listkey", key);
         i.putExtra("groupkey", groupKey);
         i.putExtra("name", name);
-        i.putExtra("position", position);
         startActivity(i);
     }
 }
