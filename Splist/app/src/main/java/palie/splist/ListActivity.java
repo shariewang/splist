@@ -40,21 +40,21 @@ import palie.splist.model.Item;
 import palie.splist.model.MemberList;
 import palie.splist.rvutils.ItemAdapter;
 import palie.splist.rvutils.MemberHolder;
+import palie.splist.rvutils.MyItemAdapter;
 
 public class ListActivity extends AppCompatActivity {
 
     private final FirebaseDatabase db = FirebaseDatabase.getInstance();
     private final FirebaseStorage storage = FirebaseStorage.getInstance();
-    private ArrayList<Item> items;
-    private ChecklistManager mChecklistManager;
-    private CheckListView checklist;
     private String uid;
     private boolean editMode;
     private int position;
-    private String groupKey, listKey, myItemKey;
-    private FirebaseRecyclerAdapter<MemberList, MemberHolder> mAdapter;
-    private RecyclerView members;
+    private String groupKey, listKey;
     private ItemAdapter adapter;
+    private MyItemAdapter myItemAdapter;
+    private ArrayList<Item> myItems;
+
+    // TODO: 6/23/2017 remove all listeners from classes onDetach
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -70,18 +70,40 @@ public class ListActivity extends AppCompatActivity {
         position = getIntent().getIntExtra("position", 0);
         groupKey = getIntent().getStringExtra("groupkey");
         listKey = getIntent().getStringExtra("listkey");
-        setUpChecklist();
 
-        items = new ArrayList<>();
-        members = (RecyclerView) findViewById(R.id.members);
+        myItems = new ArrayList<>();
+        RecyclerView items = (RecyclerView) findViewById(R.id.mylist);
+        items.setLayoutManager(new LinearLayoutManager(this));
+        myItemAdapter = new MyItemAdapter(myItems, getApplicationContext());
+        items.setAdapter(myItemAdapter);
+
+        DatabaseReference itemRef = db.getReference("Lists").child(listKey).child("items").child(uid).child("items");
+        itemRef.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                for (DataSnapshot d : dataSnapshot.getChildren()) {
+                    Item i = d.getValue(Item.class);
+                    myItems.add(i);
+                }
+                myItems.add(new Item());
+                myItemAdapter.notifyDataSetChanged();
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+
+        RecyclerView members = (RecyclerView) findViewById(R.id.members);
         members.setLayoutManager(new LinearLayoutManager(this));
         DatabaseReference ref = db.getReference("Lists").child(listKey).child("items");
-        mAdapter = new FirebaseRecyclerAdapter<MemberList, MemberHolder>(
+        FirebaseRecyclerAdapter<MemberList, MemberHolder> mAdapter = new FirebaseRecyclerAdapter<MemberList, MemberHolder>(
                 MemberList.class, R.layout.member_list_card, MemberHolder.class, ref) {
             @Override
             public void populateViewHolder(MemberHolder holder, MemberList memberlist, int position) {
                 Glide.with(getApplicationContext()).using(new FirebaseImageLoader())
-                        .load(storage.getReference().child(uid)).into(holder.getImageView());
+                        .load(storage.getReference().child(memberlist.getUid())).into(holder.getImageView());
                 holder.getTextView().setText(memberlist.getName());
 
                 RecyclerView list = holder.getListView();
@@ -96,7 +118,6 @@ public class ListActivity extends AppCompatActivity {
             }
         };
         members.setAdapter(mAdapter);
-        mAdapter.notifyDataSetChanged();
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
@@ -104,6 +125,7 @@ public class ListActivity extends AppCompatActivity {
             public void onClick(View view) {
             }
         });
+        System.out.println(myItems.size());
     }
 
     @Override
@@ -116,34 +138,6 @@ public class ListActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.edit:
-                editMode = !editMode;
-                if (editMode) {
-                    item.setIcon(R.drawable.ic_check_white_24dp);
-                    checklist.addHintItem();
-                } else {
-                    //save just got clicked
-                    items.clear();
-                    item.setIcon(R.drawable.ic_edit_white_24dp);
-                    for (int i = 0; i < mChecklistManager.getCount(); i++) {
-                        CheckListViewItem checklistItem = checklist.getChildAt(i);
-                        items.add(new Item(checklistItem.getText()));
-                    }
-
-                    //reads name from firebase
-                    db.getReference("Users").child(uid).child("name").addListenerForSingleValueEvent(new ValueEventListener() {
-                        @Override
-                        public void onDataChange(DataSnapshot dataSnapshot) {
-                            String name = dataSnapshot.getValue(String.class);
-                            db.getReference("Lists").child(listKey).child("items").child(uid).setValue(new MemberList(name, items));
-                        }
-
-                        @Override
-                        public void onCancelled(DatabaseError databaseError) {
-
-                        }
-                    });
-                }
-                mChecklistManager.toggleDragHandler(checklist, editMode);
                 return true;
             case R.id.delete_list:
                 db.getReference("Lists").child(listKey).removeValue();
@@ -158,27 +152,29 @@ public class ListActivity extends AppCompatActivity {
         }
     }
 
-    private void setUpChecklist() {
-        mChecklistManager = new ChecklistManager(this);
-        mChecklistManager.linesSeparator(Constants.LINES_SEPARATOR);
-        mChecklistManager.keepChecked(false);
-        mChecklistManager.showCheckMarks(false);
-        mChecklistManager.dragEnabled(true);
-        mChecklistManager.dragVibrationEnabled(false);
-        mChecklistManager.newEntryHint("Add new item");
-        View switchView = findViewById(R.id.edittext);
-        View newView = null;
-        try {
-            newView = mChecklistManager.convert(switchView);
+    @Override
+    protected void onStop() {
+        super.onStop();
+        System.out.println("onstop");
 
-        } catch (ViewNotSupportedException e) {
-            e.printStackTrace();
+        final ArrayList<Item> items = new ArrayList<>();
+        for (int i = 0; i < myItemAdapter.getItemCount() - 1; i++) {
+            Item checklistItem = myItemAdapter.getList().get(i);
+            items.add(new Item(checklistItem.getItem()));
         }
-        mChecklistManager.replaceViews(switchView, newView);
-        checklist = (CheckListView) newView;
-        editMode = false;
-        mChecklistManager.toggleDragHandler(checklist, true);
-        mChecklistManager.toggleDragHandler(checklist, false);
-    }
 
+        //reads name from firebase
+        db.getReference("Users").child(uid).child("name").addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                String name = dataSnapshot.getValue(String.class);
+                db.getReference("Lists").child(listKey).child("items").child(uid).setValue(new MemberList(uid, name, items));
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+    }
 }

@@ -52,7 +52,8 @@
         <activity
             android:name=".ListActivity"
             android:label="@string/title_activity_list"
-            android:theme="@style/ListTheme" />
+            android:theme="@style/ListTheme">
+        </activity>
 
         <service
             android:name=".MessagingService">

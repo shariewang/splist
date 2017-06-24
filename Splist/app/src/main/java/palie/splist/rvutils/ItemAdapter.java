@@ -49,7 +49,6 @@ public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.ViewHolder> {
         CheckBox checkbox;
         TextView name;
 
-
         ViewHolder(View itemView) {
             super(itemView);
             checkbox = (CheckBox) itemView.findViewById(R.id.checkBox);
