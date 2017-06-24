@@ -7,17 +7,11 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
-import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.CheckBox;
-import android.widget.ListView;
-import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
-import com.firebase.ui.database.FirebaseIndexRecyclerAdapter;
-import com.firebase.ui.database.FirebaseListAdapter;
 import com.firebase.ui.database.FirebaseRecyclerAdapter;
 import com.firebase.ui.storage.images.FirebaseImageLoader;
 import com.google.firebase.auth.FirebaseAuth;
@@ -28,14 +22,8 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
 
-import java.lang.reflect.Member;
 import java.util.ArrayList;
 
-import it.feio.android.checklistview.models.CheckListViewItem;
-import it.feio.android.checklistview.models.CheckListView;
-import it.feio.android.checklistview.models.ChecklistManager;
-import it.feio.android.checklistview.exceptions.ViewNotSupportedException;
-import it.feio.android.checklistview.interfaces.Constants;
 import palie.splist.model.Item;
 import palie.splist.model.MemberList;
 import palie.splist.rvutils.ItemAdapter;
@@ -47,7 +35,6 @@ public class ListActivity extends AppCompatActivity {
     private final FirebaseDatabase db = FirebaseDatabase.getInstance();
     private final FirebaseStorage storage = FirebaseStorage.getInstance();
     private String uid;
-    private boolean editMode;
     private int position;
     private String groupKey, listKey;
     private ItemAdapter adapter;
@@ -125,7 +112,6 @@ public class ListActivity extends AppCompatActivity {
             public void onClick(View view) {
             }
         });
-        System.out.println(myItems.size());
     }
 
     @Override
@@ -137,8 +123,6 @@ public class ListActivity extends AppCompatActivity {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
-            case R.id.edit:
-                return true;
             case R.id.delete_list:
                 db.getReference("Lists").child(listKey).removeValue();
                 db.getReference("Groups").child(groupKey).child("active").child(listKey).removeValue();
@@ -155,7 +139,6 @@ public class ListActivity extends AppCompatActivity {
     @Override
     protected void onStop() {
         super.onStop();
-        System.out.println("onstop");
 
         final ArrayList<Item> items = new ArrayList<>();
         for (int i = 0; i < myItemAdapter.getItemCount() - 1; i++) {
