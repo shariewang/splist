@@ -11,10 +11,8 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 
-import com.bumptech.glide.Glide;
-import com.firebase.ui.database.FirebaseRecyclerAdapter;
-import com.firebase.ui.storage.images.FirebaseImageLoader;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -27,7 +25,7 @@ import java.util.ArrayList;
 import palie.splist.model.Item;
 import palie.splist.model.MemberList;
 import palie.splist.rvutils.ItemAdapter;
-import palie.splist.rvutils.MemberHolder;
+import palie.splist.rvutils.MemberAdapter;
 import palie.splist.rvutils.MyItemAdapter;
 
 public class ListActivity extends AppCompatActivity {
@@ -80,30 +78,41 @@ public class ListActivity extends AppCompatActivity {
             }
         });
 
+        final ArrayList<MemberList> memberList = new ArrayList<>();
+
+        db.getReference("Lists").child(listKey).child("items").addChildEventListener(new ChildEventListener() {
+            @Override
+            public void onChildAdded(DataSnapshot dataSnapshot, String s) {
+                MemberList m = dataSnapshot.getValue(MemberList.class);
+                if (!m.getUid().equals(uid)) {
+                    memberList.add(m);
+                }
+            }
+
+            @Override
+            public void onChildChanged(DataSnapshot dataSnapshot, String s) {
+
+            }
+
+            @Override
+            public void onChildRemoved(DataSnapshot dataSnapshot) {
+
+            }
+
+            @Override
+            public void onChildMoved(DataSnapshot dataSnapshot, String s) {
+
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+
         RecyclerView members = (RecyclerView) findViewById(R.id.members);
         members.setLayoutManager(new LinearLayoutManager(this));
-        DatabaseReference ref = db.getReference("Lists").child(listKey).child("items");
-        FirebaseRecyclerAdapter<MemberList, MemberHolder> mAdapter = new FirebaseRecyclerAdapter<MemberList, MemberHolder>(
-                MemberList.class, R.layout.member_list_card, MemberHolder.class, ref) {
-            @Override
-            public void populateViewHolder(MemberHolder holder, MemberList memberlist, int position) {
-                Glide.with(getApplicationContext()).using(new FirebaseImageLoader())
-                        .load(storage.getReference().child(memberlist.getUid())).into(holder.getImageView());
-                holder.getTextView().setText(memberlist.getName());
-
-                RecyclerView list = holder.getListView();
-                list.setLayoutManager(new LinearLayoutManager(ListActivity.this) {
-                    @Override
-                    public boolean canScrollVertically() {
-                        return false;
-                    }
-                });
-                adapter = new ItemAdapter(memberlist.getItems(), getApplicationContext());
-                list.setAdapter(adapter);
-            }
-        };
-        members.setAdapter(mAdapter);
-        //remove self from adapter
+        members.setAdapter(new MemberAdapter(memberList, getApplicationContext()));
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
