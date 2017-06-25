@@ -8,7 +8,7 @@ public class MemberList {
     private ArrayList<Item> items;
 
     public MemberList() {
-
+        items = new ArrayList<>();
     }
 
     public MemberList(String uid, String name, ArrayList<Item> items) {

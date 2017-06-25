@@ -24,7 +24,6 @@ import com.bumptech.glide.Glide;
 import com.firebase.ui.database.FirebaseIndexRecyclerAdapter;
 import com.firebase.ui.storage.images.FirebaseImageLoader;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -32,12 +31,8 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
 
-import java.util.ArrayList;
-
 import palie.splist.model.List;
 import palie.splist.rvutils.ListViewHolder;
-import palie.splist.rvutils.UnpaidAdapter;
-import palie.splist.rvutils.WaitingAdapter;
 
 public class GroupActivity extends AppCompatActivity {
 
@@ -45,10 +40,6 @@ public class GroupActivity extends AppCompatActivity {
     private int position;
     private final FirebaseDatabase db = FirebaseDatabase.getInstance();
     private DatabaseReference mGroup;
-    private ArrayList<List> unpaidLists, waitingLists;
-    static ArrayList<List> activeLists;
-    private UnpaidAdapter unpaidAdapter;
-    private WaitingAdapter waitingAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -61,8 +52,7 @@ public class GroupActivity extends AppCompatActivity {
 
         Window w = getWindow();
         getWindow().getDecorView().setSystemUiVisibility(
-                View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-                        | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN);
+                View.SYSTEM_UI_FLAG_LAYOUT_STABLE | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN);
 
         LinearLayout content = (LinearLayout) findViewById(R.id.mycontent);
         ImageView image = (ImageView) findViewById(R.id.image_flash);
@@ -71,35 +61,6 @@ public class GroupActivity extends AppCompatActivity {
         final TextView lists = (TextView) findViewById(R.id.lists);
         final TextView waiting = (TextView) findViewById(R.id.waitingText);
         final FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        LinearLayoutManager llm1 = new LinearLayoutManager(this) {
-            @Override
-            public boolean canScrollVertically() {
-                return false;
-            }
-        };
-        LinearLayoutManager llm2 = new LinearLayoutManager(this) {
-            @Override
-            public boolean canScrollVertically() {
-                return false;
-            }
-        };
-        LinearLayoutManager llm3 = new LinearLayoutManager(this) {
-            @Override
-            public boolean canScrollVertically() {
-                return false;
-            }
-        };
-
-        unpaidLists = new ArrayList<>();
-        waitingLists = new ArrayList<>();
-
-        if (unpaidLists.size() == 0) {
-            content.removeView(waitingPayment);
-        }
-
-        if (waitingLists.size() == 0) {
-            content.removeView(waiting);
-        }
 
         groupKey = getIntent().getStringExtra("key");
         position = getIntent().getIntExtra("position", 0);
@@ -124,7 +85,6 @@ public class GroupActivity extends AppCompatActivity {
                             break;
                         case "vibrant":
                             int vibrant = d.getValue(Integer.class);
-                            System.out.println("vibrant:"+vibrant);
                             waitingPayment.setTextColor(vibrant);
                             break;
                         case "main":
@@ -141,130 +101,46 @@ public class GroupActivity extends AppCompatActivity {
 
             }
         });
-        handleListListeners(1);
-        handleListListeners(3);
+
+        //TODO: change db locations/organize for waiting and unpaid lists.
 
         RecyclerView activeRV = (RecyclerView) findViewById(R.id.active);
-        activeRV.setLayoutManager(llm2);
-        DatabaseReference active = db.getReference("Groups").child(groupKey).child("active");
-        DatabaseReference source = db.getReference("Lists");
-        FirebaseIndexRecyclerAdapter<List, ListViewHolder> adapter = new FirebaseIndexRecyclerAdapter<List, ListViewHolder>
-                        (List.class, R.layout.list_view, ListViewHolder.class, active, source) {
+        activeRV.setLayoutManager(new LinearLayoutManager(this) {
             @Override
-            protected void populateViewHolder(final ListViewHolder holder, final List list, final int i) {
-                FirebaseDatabase.getInstance().getReference("Groups").
-                        child(groupKey).child("main").addListenerForSingleValueEvent(new ValueEventListener() {
-                    @Override
-                    public void onDataChange(DataSnapshot dataSnapshot) {
-                        holder.getIcon().setFillColor(dataSnapshot.getValue(Integer.class));
-                    }
-
-                    @Override
-                    public void onCancelled(DatabaseError databaseError) {
-
-                    }
-                });
-                holder.getName().setText(list.getName());
-                switch(list.getType()) {
-                    case "Office":
-                        holder.getIcon().setImageResource(R.drawable.paperclip);
-                        break;
-                    case "Clothing":
-                        holder.getIcon().setImageResource(R.drawable.ic_hanger);
-                        break;
-                    case "Food":
-                        holder.getIcon().setImageResource(R.drawable.food);
-                        break;
-                }
-                holder.getName().setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View view) {
-                        onListClick(list.getKey(), list.getName());
-                    }
-                });
+            public boolean canScrollVertically() {
+                return false;
             }
-        };
-        activeRV.setAdapter(adapter);
+        });
+        FirebaseIndexRecyclerAdapter<List, ListViewHolder> activeAdapter = makeAdapter("active");
+        activeRV.setAdapter(activeAdapter);
 
         RecyclerView waitingRV = (RecyclerView) findViewById(R.id.waiting);
-        RecyclerView unpaidRV = (RecyclerView) findViewById(R.id.unpaid);
-        unpaidRV.setLayoutManager(llm1);
-        waitingRV.setLayoutManager(llm3);
-        unpaidAdapter = new UnpaidAdapter(unpaidLists, getApplicationContext());
-        waitingAdapter = new WaitingAdapter(waitingLists, getApplicationContext());
-        unpaidRV.setAdapter(unpaidAdapter);
+        waitingRV.setLayoutManager(new LinearLayoutManager(this) {
+            @Override
+            public boolean canScrollVertically() {
+                return false;
+            }
+        });
+        FirebaseIndexRecyclerAdapter<List, ListViewHolder> waitingAdapter = makeAdapter("waiting");
         waitingRV.setAdapter(waitingAdapter);
-    }
 
-    private void getAndAdd(final String key, final int type) {
-        db.getReference("Lists").addListenerForSingleValueEvent(new ValueEventListener() {
+        RecyclerView unpaidRV = (RecyclerView) findViewById(R.id.unpaid);
+        unpaidRV.setLayoutManager(new LinearLayoutManager(this) {
             @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                for (DataSnapshot ds : dataSnapshot.getChildren()) {
-                    if (ds.getKey().equals(key)) {
-                        List list = ds.getValue(List.class);
-                        switch(type) {
-                            case 1: //unpaid
-                                unpaidLists.add(list);
-                                unpaidAdapter.notifyItemInserted(unpaidLists.size() - 1);
-                                break;
-                            case 3: //waiting
-                                waitingLists.add(list);
-                                waitingAdapter.notifyItemInserted(waitingLists.size() - 1);
-                                break;
-                        }
-                        break;
-                    }
-                }
-            }
-
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-
+            public boolean canScrollVertically() {
+                return false;
             }
         });
-    }
+        FirebaseIndexRecyclerAdapter<List, ListViewHolder> unpaidAdapter = makeAdapter("unpaid");
+        unpaidRV.setAdapter(unpaidAdapter);
 
-    public void handleListListeners(final int type) {
-        String typeString = "";
-        switch(type) {
-            case 1:
-                typeString = "unpaid";
-                break;
-            case 2:
-                typeString = "active";
-                break;
-            case 3:
-                typeString = "waiting";
-                break;
+        if (unpaidAdapter.getItemCount() == 0) {
+            content.removeView(waitingPayment);
         }
-        mGroup.child(typeString).addChildEventListener(new ChildEventListener() {
-            @Override
-            public void onChildAdded(DataSnapshot dataSnapshot, String s) {
-                String key = dataSnapshot.getValue(String.class);
-                getAndAdd(key, type);
-            }
 
-            @Override
-            public void onChildChanged(DataSnapshot dataSnapshot, String s) {
-
-            }
-
-            @Override
-            public void onChildRemoved(DataSnapshot dataSnapshot) {
-
-            }
-
-            @Override
-            public void onChildMoved(DataSnapshot dataSnapshot, String s) {
-
-            }
-
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-
-            }
-        });
+        if (waitingAdapter.getItemCount() == 0) {
+            content.removeView(waiting);
+        }
     }
 
     public AlertDialog createDialog() {
@@ -324,6 +200,49 @@ public class GroupActivity extends AppCompatActivity {
             default:
                 return super.onOptionsItemSelected(item);
         }
+    }
+
+    private FirebaseIndexRecyclerAdapter<List, ListViewHolder> makeAdapter(String type) {
+
+        DatabaseReference ref = db.getReference("Groups").child(groupKey).child(type);
+        DatabaseReference source = db.getReference("Lists");
+        FirebaseIndexRecyclerAdapter<List, ListViewHolder> adapter = new FirebaseIndexRecyclerAdapter<List, ListViewHolder>
+                (List.class, R.layout.list_view, ListViewHolder.class, ref, source) {
+            @Override
+            protected void populateViewHolder(final ListViewHolder holder, final List list, final int i) {
+                FirebaseDatabase.getInstance().getReference("Groups").
+                        child(groupKey).child("main").addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(DataSnapshot dataSnapshot) {
+                        holder.getIcon().setFillColor(dataSnapshot.getValue(Integer.class));
+                    }
+
+                    @Override
+                    public void onCancelled(DatabaseError databaseError) {
+
+                    }
+                });
+                holder.getName().setText(list.getName());
+                switch(list.getType()) {
+                    case "Office":
+                        holder.getIcon().setImageResource(R.drawable.paperclip);
+                        break;
+                    case "Clothing":
+                        holder.getIcon().setImageResource(R.drawable.ic_hanger);
+                        break;
+                    case "Food":
+                        holder.getIcon().setImageResource(R.drawable.food);
+                        break;
+                }
+                holder.getName().setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        onListClick(list.getKey(), list.getName());
+                    }
+                });
+            }
+        };
+        return adapter;
     }
 
     public void onListClick(String key, String name) {

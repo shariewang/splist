@@ -103,6 +103,7 @@ public class ListActivity extends AppCompatActivity {
             }
         };
         members.setAdapter(mAdapter);
+        //remove self from adapter
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
