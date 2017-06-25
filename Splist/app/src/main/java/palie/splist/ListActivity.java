@@ -35,8 +35,6 @@ public class ListActivity extends AppCompatActivity {
     private final FirebaseDatabase db = FirebaseDatabase.getInstance();
     private final FirebaseStorage storage = FirebaseStorage.getInstance();
     private String uid;
-    private boolean editMode;
-    private int position;
     private String groupKey, listKey;
     private ItemAdapter adapter;
     private MyItemAdapter myItemAdapter;
@@ -55,7 +53,6 @@ public class ListActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
 
         uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
-        position = getIntent().getIntExtra("position", 0);
         groupKey = getIntent().getStringExtra("groupkey");
         listKey = getIntent().getStringExtra("listkey");
 
@@ -106,6 +103,7 @@ public class ListActivity extends AppCompatActivity {
             }
         };
         members.setAdapter(mAdapter);
+        //remove self from adapter
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
@@ -113,7 +111,6 @@ public class ListActivity extends AppCompatActivity {
             public void onClick(View view) {
             }
         });
-        System.out.println(myItems.size());
     }
 
     @Override
@@ -125,14 +122,9 @@ public class ListActivity extends AppCompatActivity {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
-            case R.id.edit:
-                return true;
             case R.id.delete_list:
                 db.getReference("Lists").child(listKey).removeValue();
                 db.getReference("Groups").child(groupKey).child("active").child(listKey).removeValue();
-                GroupActivity.activeLists.remove(position);
-                GroupActivity.activeAdapter.notifyItemRemoved(position);
-                GroupActivity.activeAdapter.notifyItemRangeRemoved(position, GroupActivity.activeAdapter.getItemCount());
                 finish();
                 return true;
             default:
@@ -143,7 +135,6 @@ public class ListActivity extends AppCompatActivity {
     @Override
     protected void onStop() {
         super.onStop();
-        System.out.println("onstop");
 
         final ArrayList<Item> items = new ArrayList<>();
         for (int i = 0; i < myItemAdapter.getItemCount() - 1; i++) {
