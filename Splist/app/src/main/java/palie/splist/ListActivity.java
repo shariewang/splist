@@ -111,6 +111,7 @@ public class ListActivity extends AppCompatActivity {
         });
 
         RecyclerView members = (RecyclerView) findViewById(R.id.members);
+        members.animate();
         members.setLayoutManager(new LinearLayoutManager(this));
         members.setAdapter(new MemberAdapter(memberList, getApplicationContext()));
 

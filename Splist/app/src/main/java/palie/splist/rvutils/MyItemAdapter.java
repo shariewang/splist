@@ -84,6 +84,7 @@ public class MyItemAdapter extends RecyclerView.Adapter<MyItemAdapter.ViewHolder
                 public void onClick(View view) {
                     items.remove(position);
                     notifyItemRemoved(position);
+                    notifyItemRangeRemoved(position, getItemCount());
                 }
             });
         }
