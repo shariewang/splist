@@ -4,20 +4,25 @@ import java.util.ArrayList;
 
 public class MemberList {
 
-    private String name;
+    private String name, uid;
     private ArrayList<Item> items;
 
     public MemberList() {
-
+        items = new ArrayList<>();
     }
 
-    public MemberList(String name, ArrayList<Item> items) {
+    public MemberList(String uid, String name, ArrayList<Item> items) {
         this.items = items;
         this.name = name;
+        this.uid = uid;
     }
 
     public String getName() {
         return name;
+    }
+
+    public String getUid() {
+        return uid;
     }
 
     public void setName(String name) {

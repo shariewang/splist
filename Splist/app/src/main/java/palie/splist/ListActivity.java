@@ -1,60 +1,55 @@
 package palie.splist;
 
+import android.graphics.Bitmap;
 import android.graphics.Color;
+import android.graphics.Paint;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.LinearLayoutCompat;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
-import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.CheckBox;
-import android.widget.ListView;
-import android.widget.TextView;
+import android.widget.EditText;
 
-import com.bumptech.glide.Glide;
-import com.firebase.ui.database.FirebaseIndexRecyclerAdapter;
-import com.firebase.ui.database.FirebaseListAdapter;
-import com.firebase.ui.database.FirebaseRecyclerAdapter;
-import com.firebase.ui.storage.images.FirebaseImageLoader;
+import com.google.android.gms.tasks.OnFailureListener;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.UploadTask;
+import com.vansuita.pickimage.bean.PickResult;
+import com.vansuita.pickimage.bundle.PickSetup;
+import com.vansuita.pickimage.dialog.PickImageDialog;
+import com.vansuita.pickimage.enums.EPickType;
+import com.vansuita.pickimage.listeners.IPickResult;
 
-import java.lang.reflect.Member;
+import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
 
-import it.feio.android.checklistview.models.CheckListViewItem;
-import it.feio.android.checklistview.models.CheckListView;
-import it.feio.android.checklistview.models.ChecklistManager;
-import it.feio.android.checklistview.exceptions.ViewNotSupportedException;
-import it.feio.android.checklistview.interfaces.Constants;
 import palie.splist.model.Item;
 import palie.splist.model.MemberList;
-import palie.splist.rvutils.ItemAdapter;
-import palie.splist.rvutils.MemberHolder;
+import palie.splist.rvutils.MemberAdapter;
+import palie.splist.rvutils.MyItemAdapter;
+import palie.splist.listeners.UploadImageListener;
 
-public class ListActivity extends AppCompatActivity {
+public class ListActivity extends AppCompatActivity implements UploadImageListener {
 
     private final FirebaseDatabase db = FirebaseDatabase.getInstance();
-    private final FirebaseStorage storage = FirebaseStorage.getInstance();
-    private ArrayList<Item> items;
-    private ChecklistManager mChecklistManager;
-    private CheckListView checklist;
     private String uid;
-    private boolean editMode;
-    private int position;
-    private String groupKey, listKey, myItemKey;
-    private FirebaseRecyclerAdapter<MemberList, MemberHolder> mAdapter;
-    private RecyclerView members;
-    private ItemAdapter adapter;
+    private String groupKey, listKey;
+    private MyItemAdapter myItemAdapter;
+    private ArrayList<Item> myItems;
+
+    // TODO: 6/23/2017 remove all listeners from classes onDetach
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -67,36 +62,70 @@ public class ListActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
 
         uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
-        position = getIntent().getIntExtra("position", 0);
         groupKey = getIntent().getStringExtra("groupkey");
         listKey = getIntent().getStringExtra("listkey");
-        setUpChecklist();
 
-        items = new ArrayList<>();
-        members = (RecyclerView) findViewById(R.id.members);
-        members.setLayoutManager(new LinearLayoutManager(this));
-        DatabaseReference ref = db.getReference("Lists").child(listKey).child("items");
-        mAdapter = new FirebaseRecyclerAdapter<MemberList, MemberHolder>(
-                MemberList.class, R.layout.member_list_card, MemberHolder.class, ref) {
+        myItems = new ArrayList<>();
+        RecyclerView items = (RecyclerView) findViewById(R.id.mylist);
+        items.setLayoutManager(new LinearLayoutManager(this));
+        myItemAdapter = new MyItemAdapter(myItems, ListActivity.this);
+        items.setAdapter(myItemAdapter);
+
+        DatabaseReference itemRef = db.getReference("Lists").child(listKey).child("items").child(uid).child("items");
+        itemRef.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
-            public void populateViewHolder(MemberHolder holder, MemberList memberlist, int position) {
-                Glide.with(getApplicationContext()).using(new FirebaseImageLoader())
-                        .load(storage.getReference().child(uid)).into(holder.getImageView());
-                holder.getTextView().setText(memberlist.getName());
-
-                RecyclerView list = holder.getListView();
-                list.setLayoutManager(new LinearLayoutManager(ListActivity.this) {
-                    @Override
-                    public boolean canScrollVertically() {
-                        return false;
-                    }
-                });
-                adapter = new ItemAdapter(memberlist.getItems(), getApplicationContext());
-                list.setAdapter(adapter);
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                for (DataSnapshot d : dataSnapshot.getChildren()) {
+                    Item i = d.getValue(Item.class);
+                    myItems.add(i);
+                    System.out.println("reading:"+i.getImageKey());
+                }
+                myItems.add(new Item());
+                myItemAdapter.notifyDataSetChanged();
             }
-        };
-        members.setAdapter(mAdapter);
-        mAdapter.notifyDataSetChanged();
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+
+        final ArrayList<MemberList> memberList = new ArrayList<>();
+
+        db.getReference("Lists").child(listKey).child("items").addChildEventListener(new ChildEventListener() {
+            @Override
+            public void onChildAdded(DataSnapshot dataSnapshot, String s) {
+                MemberList m = dataSnapshot.getValue(MemberList.class);
+                if (!m.getUid().equals(uid)) {
+                    memberList.add(m);
+                }
+            }
+
+            @Override
+            public void onChildChanged(DataSnapshot dataSnapshot, String s) {
+
+            }
+
+            @Override
+            public void onChildRemoved(DataSnapshot dataSnapshot) {
+
+            }
+
+            @Override
+            public void onChildMoved(DataSnapshot dataSnapshot, String s) {
+
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+
+        RecyclerView members = (RecyclerView) findViewById(R.id.members);
+        members.animate();
+        members.setLayoutManager(new LinearLayoutManager(this));
+        members.setAdapter(new MemberAdapter(memberList, getApplicationContext(), this));
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
@@ -115,42 +144,9 @@ public class ListActivity extends AppCompatActivity {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
-            case R.id.edit:
-                editMode = !editMode;
-                if (editMode) {
-                    item.setIcon(R.drawable.ic_check_white_24dp);
-                    checklist.addHintItem();
-                } else {
-                    //save just got clicked
-                    items.clear();
-                    item.setIcon(R.drawable.ic_edit_white_24dp);
-                    for (int i = 0; i < mChecklistManager.getCount(); i++) {
-                        CheckListViewItem checklistItem = checklist.getChildAt(i);
-                        items.add(new Item(checklistItem.getText()));
-                    }
-
-                    //reads name from firebase
-                    db.getReference("Users").child(uid).child("name").addListenerForSingleValueEvent(new ValueEventListener() {
-                        @Override
-                        public void onDataChange(DataSnapshot dataSnapshot) {
-                            String name = dataSnapshot.getValue(String.class);
-                            db.getReference("Lists").child(listKey).child("items").child(uid).setValue(new MemberList(name, items));
-                        }
-
-                        @Override
-                        public void onCancelled(DatabaseError databaseError) {
-
-                        }
-                    });
-                }
-                mChecklistManager.toggleDragHandler(checklist, editMode);
-                return true;
             case R.id.delete_list:
                 db.getReference("Lists").child(listKey).removeValue();
                 db.getReference("Groups").child(groupKey).child("active").child(listKey).removeValue();
-                GroupActivity.activeLists.remove(position);
-                GroupActivity.activeAdapter.notifyItemRemoved(position);
-                GroupActivity.activeAdapter.notifyItemRangeRemoved(position, GroupActivity.activeAdapter.getItemCount());
                 finish();
                 return true;
             default:
@@ -158,27 +154,61 @@ public class ListActivity extends AppCompatActivity {
         }
     }
 
-    private void setUpChecklist() {
-        mChecklistManager = new ChecklistManager(this);
-        mChecklistManager.linesSeparator(Constants.LINES_SEPARATOR);
-        mChecklistManager.keepChecked(false);
-        mChecklistManager.showCheckMarks(false);
-        mChecklistManager.dragEnabled(true);
-        mChecklistManager.dragVibrationEnabled(false);
-        mChecklistManager.newEntryHint("Add new item");
-        View switchView = findViewById(R.id.edittext);
-        View newView = null;
-        try {
-            newView = mChecklistManager.convert(switchView);
+    @Override
+    protected void onStop() {
+        super.onStop();
 
-        } catch (ViewNotSupportedException e) {
-            e.printStackTrace();
+        final ArrayList<Item> items = new ArrayList<>();
+        for (int i = 0; i < myItemAdapter.getItemCount() - 1; i++) {
+            Item checklistItem = myItemAdapter.getList().get(i);
+            if (checklistItem.getImageKey() == null) {
+                items.add(new Item(checklistItem.getItem()));
+            } else {
+                items.add(new Item(checklistItem.getItem(), checklistItem.getImageKey()));
+            }
         }
-        mChecklistManager.replaceViews(switchView, newView);
-        checklist = (CheckListView) newView;
-        editMode = false;
-        mChecklistManager.toggleDragHandler(checklist, true);
-        mChecklistManager.toggleDragHandler(checklist, false);
+
+        //reads name from firebase
+        db.getReference("Users").child(uid).child("name").addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                String name = dataSnapshot.getValue(String.class);
+                db.getReference("Lists").child(listKey).child("items").child(uid).setValue(new MemberList(uid, name, items));
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
     }
 
+    @Override
+    public void uploadImage(final int position, final EditText name) {
+        PickSetup setup = new PickSetup()
+                .setPickTypes(EPickType.CAMERA, EPickType.GALLERY)
+                .setButtonOrientationInt(LinearLayoutCompat.VERTICAL)
+                .setSystemDialog(true);
+        PickImageDialog.build(setup).setOnPickResult(new IPickResult() {
+            @Override
+            public void onPickResult(PickResult pickResult) {
+                Bitmap result = pickResult.getBitmap();
+                String key = db.getReference("Images").push().getKey();
+                ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                result.compress(Bitmap.CompressFormat.JPEG, 100, baos);
+                byte[] data = baos.toByteArray();
+                UploadTask uploadTask = FirebaseStorage.getInstance().getReference().child(key).putBytes(data);
+                uploadTask.addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        System.out.println("Upload failed");
+                    }
+                });
+                db.getReference("Lists").child(listKey).child("items").child(uid)
+                        .child("items").child(position+"").child("imageKey").setValue(key);
+                myItemAdapter.getList().get(position).setImageKey(key);
+                name.setPaintFlags(name.getPaintFlags() | Paint.UNDERLINE_TEXT_FLAG);
+            }
+        }).show(this);
+    }
 }

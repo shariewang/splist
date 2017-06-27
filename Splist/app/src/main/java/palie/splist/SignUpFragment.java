@@ -72,8 +72,7 @@ public class SignUpFragment extends Fragment implements View.OnClickListener {
             case R.id.profilepic:
                 PickSetup setup = new PickSetup()
                         .setPickTypes(EPickType.CAMERA, EPickType.GALLERY)
-                        .setCameraButtonText("Take a photo")
-                        .setGalleryButtonText("Choose from gallery")
+                        .setButtonOrientation(LinearLayoutCompat.VERTICAL)
                         .setSystemDialog(true);
                 PickImageDialog.build(setup).setOnPickResult(new IPickResult() {
                     @Override

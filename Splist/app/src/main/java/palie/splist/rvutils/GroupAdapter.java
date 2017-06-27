@@ -15,7 +15,7 @@ import com.google.firebase.storage.FirebaseStorage;
 
 import java.util.ArrayList;
 import java.util.List;
-import palie.splist.GroupClickListener;
+import palie.splist.listeners.GroupClickListener;
 import palie.splist.R;
 import palie.splist.model.Group;
 

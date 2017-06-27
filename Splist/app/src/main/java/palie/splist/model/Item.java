@@ -3,13 +3,20 @@ package palie.splist.model;
 public class Item {
 
     private boolean checked;
-    private String item;
+    private String item, imageKey;
 
     public Item() {}
 
     public Item(String item) {
         this.checked = false;
         this.item = item;
+        this.imageKey = "false";
+    }
+
+    public Item(String item, String key) {
+        this.checked = false;
+        this.item = item;
+        this.imageKey = key;
     }
 
     public String getItem() {
@@ -30,5 +37,13 @@ public class Item {
 
     public void toggle() {
         checked = !checked;
+    }
+
+    public String getImageKey() {
+        return imageKey;
+    }
+
+    public void setImageKey(String key) {
+        imageKey = key;
     }
 }

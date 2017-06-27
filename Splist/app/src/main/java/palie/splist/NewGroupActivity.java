@@ -16,6 +16,8 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
+
 import com.android.ex.chips.BaseRecipientAdapter;
 import com.android.ex.chips.RecipientEditTextView;
 import com.android.ex.chips.recipientchip.DrawableRecipientChip;
@@ -67,14 +69,14 @@ public class NewGroupActivity extends AppCompatActivity {
 
         groupName = (EditText) findViewById(R.id.name);
         groupImage = (ImageView) findViewById(R.id.img);
+        groupImage.setScaleType(ImageView.ScaleType.CENTER_CROP);
         groupImage.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 //upload image
                 PickSetup setup = new PickSetup()
                         .setPickTypes(EPickType.CAMERA, EPickType.GALLERY)
-                        .setCameraButtonText("Take a photo")
-                        .setGalleryButtonText("Choose from gallery")
+                        .setButtonOrientationInt(LinearLayoutCompat.VERTICAL)
                         .setSystemDialog(true);
                 PickImageDialog.build(setup).setOnPickResult(new IPickResult() {
                     @Override
