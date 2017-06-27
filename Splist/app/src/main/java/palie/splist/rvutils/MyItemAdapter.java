@@ -1,11 +1,6 @@
 package palie.splist.rvutils;
 
-import android.app.Activity;
-import android.content.Context;
-import android.graphics.Bitmap;
 import android.graphics.Paint;
-import android.support.annotation.NonNull;
-import android.support.v7.widget.LinearLayoutCompat;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -13,27 +8,14 @@ import android.view.ViewGroup;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ImageView;
-import android.widget.TextView;
 
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.storage.FirebaseStorage;
-import com.google.firebase.storage.UploadTask;
-import com.vansuita.pickimage.bean.PickResult;
-import com.vansuita.pickimage.bundle.PickSetup;
-import com.vansuita.pickimage.dialog.PickImageDialog;
-import com.vansuita.pickimage.enums.EPickType;
-import com.vansuita.pickimage.listeners.IPickResult;
 
-import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
 import java.util.Objects;
 
-import palie.splist.ListActivity;
-import palie.splist.MainActivity;
-import palie.splist.NewGroupActivity;
 import palie.splist.R;
+import palie.splist.listeners.UploadImageListener;
 import palie.splist.model.Item;
 
 public class MyItemAdapter extends RecyclerView.Adapter<MyItemAdapter.ViewHolder> {
@@ -59,7 +41,7 @@ public class MyItemAdapter extends RecyclerView.Adapter<MyItemAdapter.ViewHolder
         Item i = items.get(position);
         holder.checkbox.setChecked(i.getChecked());
         holder.name.setText(i.getItem());
-        if (!Objects.equals(i.getImageKey(), "false")) {
+        if (!Objects.equals(i.getImageKey(), "false") && position != getItemCount() - 1) {
             holder.name.setPaintFlags(holder.name.getPaintFlags() | Paint.UNDERLINE_TEXT_FLAG);
         }
         holder.delete.setVisibility(View.INVISIBLE);

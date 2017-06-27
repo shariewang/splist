@@ -1,5 +1,6 @@
 package palie.splist.rvutils;
 
+import android.app.Activity;
 import android.content.Context;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -17,16 +18,17 @@ import java.util.ArrayList;
 import palie.splist.R;
 import palie.splist.model.MemberList;
 
-
 public class MemberAdapter extends RecyclerView.Adapter<MemberAdapter.ViewHolder>{
 
     private final FirebaseStorage storage = FirebaseStorage.getInstance();
     private ArrayList<MemberList> members;
     private Context mContext;
+    private Activity activity;
 
-    public MemberAdapter(ArrayList<MemberList> members, Context mContext) {
+    public MemberAdapter(ArrayList<MemberList> members, Context mContext, Activity activity) {
         this.members = members;
         this.mContext = mContext;
+        this.activity = activity;
     }
 
     @Override
@@ -49,7 +51,7 @@ public class MemberAdapter extends RecyclerView.Adapter<MemberAdapter.ViewHolder
                 return false;
             }
         });
-        holder.listView.setAdapter(new ItemAdapter(member.getItems(), mContext));
+        holder.listView.setAdapter(new ItemAdapter(member.getItems(), mContext, activity));
     }
 
     @Override

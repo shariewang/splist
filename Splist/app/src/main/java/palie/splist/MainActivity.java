@@ -23,6 +23,7 @@ import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
 
+import palie.splist.listeners.GroupClickListener;
 import palie.splist.model.Group;
 import palie.splist.rvutils.GroupAdapter;
 

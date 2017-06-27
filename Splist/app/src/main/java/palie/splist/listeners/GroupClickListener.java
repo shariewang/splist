@@ -1,4 +1,4 @@
-package palie.splist;
+package palie.splist.listeners;
 
 import android.widget.ImageView;
 import android.widget.TextView;

@@ -39,7 +39,7 @@ import palie.splist.model.Item;
 import palie.splist.model.MemberList;
 import palie.splist.rvutils.MemberAdapter;
 import palie.splist.rvutils.MyItemAdapter;
-import palie.splist.rvutils.UploadImageListener;
+import palie.splist.listeners.UploadImageListener;
 
 public class ListActivity extends AppCompatActivity implements UploadImageListener {
 
@@ -125,7 +125,7 @@ public class ListActivity extends AppCompatActivity implements UploadImageListen
         RecyclerView members = (RecyclerView) findViewById(R.id.members);
         members.animate();
         members.setLayoutManager(new LinearLayoutManager(this));
-        members.setAdapter(new MemberAdapter(memberList, getApplicationContext()));
+        members.setAdapter(new MemberAdapter(memberList, getApplicationContext(), this));
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
@@ -161,7 +161,11 @@ public class ListActivity extends AppCompatActivity implements UploadImageListen
         final ArrayList<Item> items = new ArrayList<>();
         for (int i = 0; i < myItemAdapter.getItemCount() - 1; i++) {
             Item checklistItem = myItemAdapter.getList().get(i);
-            items.add(new Item(checklistItem.getItem(), checklistItem.getImageKey()));
+            if (checklistItem.getImageKey() == null) {
+                items.add(new Item(checklistItem.getItem()));
+            } else {
+                items.add(new Item(checklistItem.getItem(), checklistItem.getImageKey()));
+            }
         }
 
         //reads name from firebase

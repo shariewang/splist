@@ -1,4 +1,4 @@
-package palie.splist.rvutils;
+package palie.splist.listeners;
 
 import android.widget.EditText;
 
