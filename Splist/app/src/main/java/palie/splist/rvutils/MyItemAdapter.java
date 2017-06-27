@@ -1,6 +1,11 @@
 package palie.splist.rvutils;
 
+import android.app.Activity;
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.Paint;
+import android.support.annotation.NonNull;
+import android.support.v7.widget.LinearLayoutCompat;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -10,20 +15,37 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import java.util.ArrayList;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.UploadTask;
+import com.vansuita.pickimage.bean.PickResult;
+import com.vansuita.pickimage.bundle.PickSetup;
+import com.vansuita.pickimage.dialog.PickImageDialog;
+import com.vansuita.pickimage.enums.EPickType;
+import com.vansuita.pickimage.listeners.IPickResult;
 
+import java.io.ByteArrayOutputStream;
+import java.util.ArrayList;
+import java.util.Objects;
+
+import palie.splist.ListActivity;
+import palie.splist.MainActivity;
+import palie.splist.NewGroupActivity;
 import palie.splist.R;
 import palie.splist.model.Item;
 
 public class MyItemAdapter extends RecyclerView.Adapter<MyItemAdapter.ViewHolder> {
 
     private ArrayList<Item> items;
-    private Context mContext;
+    private UploadImageListener listener;
+    private static final FirebaseDatabase DB = FirebaseDatabase.getInstance();
 
-    public MyItemAdapter(ArrayList<Item> items, Context mContext) {
+    public MyItemAdapter(ArrayList<Item> items, UploadImageListener listener) {
         super();
         this.items = items;
-        this.mContext = mContext;
+        this.listener = listener;
     }
 
     @Override
@@ -37,7 +59,11 @@ public class MyItemAdapter extends RecyclerView.Adapter<MyItemAdapter.ViewHolder
         Item i = items.get(position);
         holder.checkbox.setChecked(i.getChecked());
         holder.name.setText(i.getItem());
+        if (!Objects.equals(i.getImageKey(), "false")) {
+            holder.name.setPaintFlags(holder.name.getPaintFlags() | Paint.UNDERLINE_TEXT_FLAG);
+        }
         holder.delete.setVisibility(View.INVISIBLE);
+        holder.photo.setVisibility(View.INVISIBLE);
         holder.position = position;
     }
 
@@ -54,7 +80,7 @@ public class MyItemAdapter extends RecyclerView.Adapter<MyItemAdapter.ViewHolder
 
         CheckBox checkbox;
         EditText name;
-        ImageView delete;
+        ImageView delete, photo;
         int position;
 
         ViewHolder(View itemView) {
@@ -62,6 +88,7 @@ public class MyItemAdapter extends RecyclerView.Adapter<MyItemAdapter.ViewHolder
             checkbox = (CheckBox) itemView.findViewById(R.id.checkBox);
             name = (EditText) itemView.findViewById(R.id.itemName);
             delete = (ImageView) itemView.findViewById(R.id.delete);
+            photo = (ImageView) itemView.findViewById(R.id.photo);
 
             name.setOnFocusChangeListener(new View.OnFocusChangeListener() {
                 @Override
@@ -72,9 +99,11 @@ public class MyItemAdapter extends RecyclerView.Adapter<MyItemAdapter.ViewHolder
                             items.add(new Item());
                         }
                         delete.setVisibility(View.VISIBLE);
+                        photo.setVisibility(View.VISIBLE);
                     } else {
                         items.get(position).setItem(name.getText().toString());
                         delete.setVisibility(View.INVISIBLE);
+                        photo.setVisibility(View.INVISIBLE);
                     }
                 }
             });
@@ -85,6 +114,13 @@ public class MyItemAdapter extends RecyclerView.Adapter<MyItemAdapter.ViewHolder
                     items.remove(position);
                     notifyItemRemoved(position);
                     notifyItemRangeRemoved(position, getItemCount());
+                }
+            });
+
+            photo.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    listener.uploadImage(position, name);
                 }
             });
         }
