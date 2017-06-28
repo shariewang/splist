@@ -2,6 +2,8 @@ package palie.splist.rvutils;
 
 import android.graphics.Paint;
 import android.support.v7.widget.RecyclerView;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -15,16 +17,16 @@ import java.util.ArrayList;
 import java.util.Objects;
 
 import palie.splist.R;
-import palie.splist.listeners.UploadImageListener;
+import palie.splist.listeners.MyItemListener;
 import palie.splist.model.Item;
 
 public class MyItemAdapter extends RecyclerView.Adapter<MyItemAdapter.ViewHolder> {
 
     private ArrayList<Item> items;
-    private UploadImageListener listener;
+    private MyItemListener listener;
     private static final FirebaseDatabase DB = FirebaseDatabase.getInstance();
 
-    public MyItemAdapter(ArrayList<Item> items, UploadImageListener listener) {
+    public MyItemAdapter(ArrayList<Item> items, MyItemListener listener) {
         super();
         this.items = items;
         this.listener = listener;
@@ -95,7 +97,7 @@ public class MyItemAdapter extends RecyclerView.Adapter<MyItemAdapter.ViewHolder
                 public void onClick(View view) {
                     items.remove(position);
                     notifyItemRemoved(position);
-                    notifyItemRangeRemoved(position, getItemCount());
+                    notifyItemRangeChanged(position, getItemCount());
                 }
             });
 

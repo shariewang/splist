@@ -39,15 +39,17 @@ import palie.splist.model.Item;
 import palie.splist.model.MemberList;
 import palie.splist.rvutils.MemberAdapter;
 import palie.splist.rvutils.MyItemAdapter;
-import palie.splist.listeners.UploadImageListener;
+import palie.splist.listeners.MyItemListener;
 
-public class ListActivity extends AppCompatActivity implements UploadImageListener {
+public class ListActivity extends AppCompatActivity implements MyItemListener {
 
     private final FirebaseDatabase db = FirebaseDatabase.getInstance();
     private String uid;
     private String groupKey, listKey;
     private MyItemAdapter myItemAdapter;
     private ArrayList<Item> myItems;
+    private FloatingActionButton fab;
+    private LinearLayoutManager layoutManager;
 
     // TODO: 6/23/2017 remove all listeners from classes onDetach
 
@@ -67,7 +69,8 @@ public class ListActivity extends AppCompatActivity implements UploadImageListen
 
         myItems = new ArrayList<>();
         RecyclerView items = (RecyclerView) findViewById(R.id.mylist);
-        items.setLayoutManager(new LinearLayoutManager(this));
+        layoutManager = new LinearLayoutManager(this);
+        items.setLayoutManager(layoutManager);
         myItemAdapter = new MyItemAdapter(myItems, ListActivity.this);
         items.setAdapter(myItemAdapter);
 
@@ -127,7 +130,7 @@ public class ListActivity extends AppCompatActivity implements UploadImageListen
         members.setLayoutManager(new LinearLayoutManager(this));
         members.setAdapter(new MemberAdapter(memberList, getApplicationContext(), this));
 
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
+        fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -152,6 +155,12 @@ public class ListActivity extends AppCompatActivity implements UploadImageListen
             default:
                 return super.onOptionsItemSelected(item);
         }
+    }
+
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+        layoutManager.findViewByPosition(myItemAdapter.getItemCount() - 2).clearFocus();
     }
 
     @Override
@@ -211,4 +220,6 @@ public class ListActivity extends AppCompatActivity implements UploadImageListen
             }
         }).show(this);
     }
+
+
 }

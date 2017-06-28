@@ -194,7 +194,7 @@ public class GroupActivity extends AppCompatActivity {
                 db.getReference("Users").child(uid).child(groupKey).removeValue();
                 MainActivity.mGroups.remove(position);
                 MainActivity.groupAdapter.notifyItemRemoved(position);
-                MainActivity.groupAdapter.notifyItemRangeRemoved(position, MainActivity.groupAdapter.getItemCount());
+                MainActivity.groupAdapter.notifyItemRangeChanged(position, MainActivity.groupAdapter.getItemCount());
                 finish();
                 return true;
             default:
