@@ -2,7 +2,8 @@ package palie.splist.model;
 
 public class List {
 
-    private String key, name, type;
+    private String key, name, type, buyer;
+    private int status;
 
     public List() {}
     public List(String key, String name, String type) {

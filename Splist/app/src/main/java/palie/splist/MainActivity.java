@@ -72,7 +72,6 @@ public class MainActivity extends AppCompatActivity implements GroupClickListene
         groupAdapter = new GroupAdapter(mGroups, getApplicationContext(), this);
         recyclerView.setAdapter(groupAdapter);
 
-        db.getReference("Users").child(user.getUid()).child("token").setValue(InstanceIDService.token);
         db.getReference("Users").child(user.getUid()).child("groups").addChildEventListener(new ChildEventListener() {
             @Override
             public void onChildAdded(DataSnapshot dataSnapshot, String s) {

@@ -1,12 +1,19 @@
 package palie.splist;
 
+import android.app.Notification;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.media.RingtoneManager;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.app.NotificationCompat;
 import android.support.v7.widget.LinearLayoutCompat;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -16,6 +23,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.EditText;
 
+import com.bumptech.glide.Priority;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.ChildEventListener;
@@ -48,10 +56,11 @@ public class ListActivity extends AppCompatActivity implements MyItemListener {
     private String groupKey, listKey;
     private MyItemAdapter myItemAdapter;
     private ArrayList<Item> myItems;
-    private FloatingActionButton fab;
     private LinearLayoutManager layoutManager;
+    private DatabaseReference itemRef;
+    private ChildEventListener listCL;
 
-    // TODO: 6/23/2017 remove all listeners from classes onDetach
+    // TODO: 6/23/2017 remove all listeners from classes onDetach except notification one.
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -74,7 +83,7 @@ public class ListActivity extends AppCompatActivity implements MyItemListener {
         myItemAdapter = new MyItemAdapter(myItems, ListActivity.this);
         items.setAdapter(myItemAdapter);
 
-        DatabaseReference itemRef = db.getReference("Lists").child(listKey).child("items").child(uid).child("items");
+        itemRef = db.getReference("Lists").child(listKey).child("items").child(uid).child("items");
         itemRef.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
@@ -95,7 +104,7 @@ public class ListActivity extends AppCompatActivity implements MyItemListener {
 
         final ArrayList<MemberList> memberList = new ArrayList<>();
 
-        db.getReference("Lists").child(listKey).child("items").addChildEventListener(new ChildEventListener() {
+        listCL = new ChildEventListener() {
             @Override
             public void onChildAdded(DataSnapshot dataSnapshot, String s) {
                 MemberList m = dataSnapshot.getValue(MemberList.class);
@@ -123,17 +132,19 @@ public class ListActivity extends AppCompatActivity implements MyItemListener {
             public void onCancelled(DatabaseError databaseError) {
 
             }
-        });
+        };
+        db.getReference("Lists").child(listKey).child("items").addChildEventListener(listCL);
 
         RecyclerView members = (RecyclerView) findViewById(R.id.members);
         members.animate();
         members.setLayoutManager(new LinearLayoutManager(this));
         members.setAdapter(new MemberAdapter(memberList, getApplicationContext(), this));
 
-        fab = (FloatingActionButton) findViewById(R.id.fab);
+        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+
             }
         });
     }
@@ -164,8 +175,8 @@ public class ListActivity extends AppCompatActivity implements MyItemListener {
     }
 
     @Override
-    protected void onStop() {
-        super.onStop();
+    protected void onPause() {
+        super.onPause();
 
         final ArrayList<Item> items = new ArrayList<>();
         for (int i = 0; i < myItemAdapter.getItemCount() - 1; i++) {
@@ -221,5 +232,29 @@ public class ListActivity extends AppCompatActivity implements MyItemListener {
         }).show(this);
     }
 
+    private void sendShoppingNotification() {
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(ListActivity.this);
+        Uri alarmSound = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
+
+        Intent resultIntent = new Intent(ListActivity.this, MainActivity.class);
+        PendingIntent resultPendingIntent = PendingIntent.getActivity(ListActivity.this, 0, resultIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+
+        builder.setSmallIcon(R.drawable.ic_icon)
+                .setContentTitle("Going shopping!")
+                .setContentText("Last chance to add items!")
+                .setSound(alarmSound)
+                .setContentIntent(resultPendingIntent)
+                .setPriority(Notification.PRIORITY_HIGH);
+
+        int notificationId = 001;
+        NotificationManager manager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+        manager.notify(notificationId, builder.build());
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        db.getReference("Lists").child(listKey).child("items").removeEventListener(listCL);
+    }
 
 }
