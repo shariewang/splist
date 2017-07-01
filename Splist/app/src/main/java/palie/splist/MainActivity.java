@@ -84,7 +84,6 @@ public class MainActivity extends AppCompatActivity implements GroupClickListene
                                 Group group = ds.getValue(Group.class);
                                 mGroups.add(group);
                                 groupAdapter.notifyItemInserted(mGroups.size() - 1);
-                                //groupAdapter.notifyDataSetChanged();
                                 break;
                             }
                         }

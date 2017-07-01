@@ -6,10 +6,11 @@ public class List {
     private int status;
 
     public List() {}
-    public List(String key, String name, String type) {
+    public List(String key, String name, String type, int status) {
         this.key = key;
         this.name = name;
         this.type = type;
+        this.status = status;
     }
 
     public String getKey() {

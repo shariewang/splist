@@ -1,19 +1,13 @@
 package palie.splist;
 
-import android.app.Notification;
-import android.app.NotificationManager;
-import android.app.PendingIntent;
-import android.content.Intent;
+import android.app.ProgressDialog;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.Paint;
-import android.media.RingtoneManager;
-import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.app.NotificationCompat;
 import android.support.v7.widget.LinearLayoutCompat;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -23,7 +17,6 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.EditText;
 
-import com.bumptech.glide.Priority;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.ChildEventListener;
@@ -43,11 +36,11 @@ import com.vansuita.pickimage.listeners.IPickResult;
 import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
 
+import palie.splist.listeners.MyItemListener;
 import palie.splist.model.Item;
 import palie.splist.model.MemberList;
 import palie.splist.rvutils.MemberAdapter;
 import palie.splist.rvutils.MyItemAdapter;
-import palie.splist.listeners.MyItemListener;
 
 public class ListActivity extends AppCompatActivity implements MyItemListener {
 
@@ -57,8 +50,11 @@ public class ListActivity extends AppCompatActivity implements MyItemListener {
     private MyItemAdapter myItemAdapter;
     private ArrayList<Item> myItems;
     private LinearLayoutManager layoutManager;
-    private DatabaseReference itemRef;
     private ChildEventListener listCL;
+    private TessOCR mTess;
+    private ProgressDialog mProgress;
+    private static final int SHOPPING = 1;
+    private static final int ONGOING = 2;
 
     // TODO: 6/23/2017 remove all listeners from classes onDetach except notification one.
 
@@ -83,7 +79,7 @@ public class ListActivity extends AppCompatActivity implements MyItemListener {
         myItemAdapter = new MyItemAdapter(myItems, ListActivity.this);
         items.setAdapter(myItemAdapter);
 
-        itemRef = db.getReference("Lists").child(listKey).child("items").child(uid).child("items");
+        DatabaseReference itemRef = db.getReference("Lists").child(listKey).child("items").child(uid).child("items");
         itemRef.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
@@ -103,7 +99,6 @@ public class ListActivity extends AppCompatActivity implements MyItemListener {
         });
 
         final ArrayList<MemberList> memberList = new ArrayList<>();
-
         listCL = new ChildEventListener() {
             @Override
             public void onChildAdded(DataSnapshot dataSnapshot, String s) {
@@ -140,10 +135,58 @@ public class ListActivity extends AppCompatActivity implements MyItemListener {
         members.setLayoutManager(new LinearLayoutManager(this));
         members.setAdapter(new MemberAdapter(memberList, getApplicationContext(), this));
 
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
+        final FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                //initial click
+                //db.getReference("Lists").child(listKey).child("status").setValue(SHOPPING);
+                //second click to upload receipt.
+                mTess = new TessOCR(ListActivity.this, "eng");
+                PickSetup setup = new PickSetup()
+                        .setPickTypes(EPickType.CAMERA)
+                        .setButtonOrientationInt(LinearLayoutCompat.VERTICAL)
+                        .setSystemDialog(true);
+                PickImageDialog.build(setup).setOnPickResult(new IPickResult() {
+                    @Override
+                    public void onPickResult(PickResult pickResult) {
+                        Bitmap result = pickResult.getBitmap();
+                        System.out.println(mTess.getOCRResult(result));
+                    }
+                }).show(ListActivity.this);
+
+            }
+        });
+
+        //disable fab and my checklist after disabled status code
+        db.getReference("Lists").child(listKey).addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                String buyerUid = "";
+                for (DataSnapshot ds : dataSnapshot.getChildren()) {
+                    if (dataSnapshot.getKey().equals("buyerUid")) {
+                        buyerUid = dataSnapshot.getValue(String.class);
+                    }
+                    if (dataSnapshot.getKey().equals("status")) {
+                        int code = dataSnapshot.getValue(Integer.class);
+                        if (code == ONGOING && !uid.equals(buyerUid)) {
+                            for (int i = 0; i < myItemAdapter.getItemCount() - 1; i++) {
+                                View v = layoutManager.findViewByPosition(i);
+                                v.findViewById(R.id.itemName).setEnabled(false);
+                            }
+                            int position = myItems.size() - 1;
+                            myItems.remove(position);
+                            myItemAdapter.notifyItemRemoved(position);
+                            fab.setEnabled(false);
+                            //change text color maybe. add locked symbol?
+                        }
+                        break;
+                    }
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
 
             }
         });
@@ -171,7 +214,9 @@ public class ListActivity extends AppCompatActivity implements MyItemListener {
     @Override
     public void onBackPressed() {
         super.onBackPressed();
-        layoutManager.findViewByPosition(myItemAdapter.getItemCount() - 2).clearFocus();
+        if (myItemAdapter.getItemCount() >= 2) {
+            layoutManager.findViewByPosition(myItemAdapter.getItemCount() - 2).clearFocus();
+        }
     }
 
     @Override
@@ -230,25 +275,6 @@ public class ListActivity extends AppCompatActivity implements MyItemListener {
                 name.setPaintFlags(name.getPaintFlags() | Paint.UNDERLINE_TEXT_FLAG);
             }
         }).show(this);
-    }
-
-    private void sendShoppingNotification() {
-        NotificationCompat.Builder builder = new NotificationCompat.Builder(ListActivity.this);
-        Uri alarmSound = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
-
-        Intent resultIntent = new Intent(ListActivity.this, MainActivity.class);
-        PendingIntent resultPendingIntent = PendingIntent.getActivity(ListActivity.this, 0, resultIntent, PendingIntent.FLAG_UPDATE_CURRENT);
-
-        builder.setSmallIcon(R.drawable.ic_icon)
-                .setContentTitle("Going shopping!")
-                .setContentText("Last chance to add items!")
-                .setSound(alarmSound)
-                .setContentIntent(resultPendingIntent)
-                .setPriority(Notification.PRIORITY_HIGH);
-
-        int notificationId = 001;
-        NotificationManager manager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-        manager.notify(notificationId, builder.build());
     }
 
     @Override
