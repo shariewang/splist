@@ -1,11 +1,13 @@
 package palie.splist;
 
 import android.app.ProgressDialog;
+import android.content.res.ColorStateList;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.design.widget.AppBarLayout;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutCompat;
@@ -15,6 +17,7 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.Window;
 import android.widget.EditText;
 
 import com.google.android.gms.tasks.OnFailureListener;
@@ -27,6 +30,7 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.UploadTask;
+import com.googlecode.tesseract.android.TessBaseAPI;
 import com.vansuita.pickimage.bean.PickResult;
 import com.vansuita.pickimage.bundle.PickSetup;
 import com.vansuita.pickimage.dialog.PickImageDialog;
@@ -51,8 +55,8 @@ public class ListActivity extends AppCompatActivity implements MyItemListener {
     private ArrayList<Item> myItems;
     private LinearLayoutManager layoutManager;
     private ChildEventListener listCL;
-    private TessOCR mTess;
-    private ProgressDialog mProgress;
+    private AppBarLayout appbar;
+    private FloatingActionButton fab;
     private static final int SHOPPING = 1;
     private static final int ONGOING = 2;
 
@@ -63,14 +67,22 @@ public class ListActivity extends AppCompatActivity implements MyItemListener {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_list);
 
+        Window w = getWindow();
+        getWindow().getDecorView().setSystemUiVisibility(
+                View.SYSTEM_UI_FLAG_LAYOUT_STABLE | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN);
+
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         toolbar.setTitle(getIntent().getStringExtra("name"));
         toolbar.setTitleTextColor(Color.WHITE);
         setSupportActionBar(toolbar);
 
+        appbar = (AppBarLayout) findViewById(R.id.app_bar);
+
         uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
         groupKey = getIntent().getStringExtra("groupkey");
         listKey = getIntent().getStringExtra("listkey");
+
+        setAppBarColor();
 
         myItems = new ArrayList<>();
         RecyclerView items = (RecyclerView) findViewById(R.id.mylist);
@@ -135,26 +147,13 @@ public class ListActivity extends AppCompatActivity implements MyItemListener {
         members.setLayoutManager(new LinearLayoutManager(this));
         members.setAdapter(new MemberAdapter(memberList, getApplicationContext(), this));
 
-        final FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
+        fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 //initial click
-                //db.getReference("Lists").child(listKey).child("status").setValue(SHOPPING);
+                db.getReference("Lists").child(listKey).child("status").setValue(SHOPPING);
                 //second click to upload receipt.
-                mTess = new TessOCR(ListActivity.this, "eng");
-                PickSetup setup = new PickSetup()
-                        .setPickTypes(EPickType.CAMERA)
-                        .setButtonOrientationInt(LinearLayoutCompat.VERTICAL)
-                        .setSystemDialog(true);
-                PickImageDialog.build(setup).setOnPickResult(new IPickResult() {
-                    @Override
-                    public void onPickResult(PickResult pickResult) {
-                        Bitmap result = pickResult.getBitmap();
-                        System.out.println(mTess.getOCRResult(result));
-                    }
-                }).show(ListActivity.this);
-
             }
         });
 
@@ -275,6 +274,28 @@ public class ListActivity extends AppCompatActivity implements MyItemListener {
                 name.setPaintFlags(name.getPaintFlags() | Paint.UNDERLINE_TEXT_FLAG);
             }
         }).show(this);
+    }
+
+    private void setAppBarColor() {
+        db.getReference("Groups").child(groupKey).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                for (DataSnapshot ds : dataSnapshot.getChildren()) {
+                    if (ds.getKey().equals("main")) {
+                        appbar.setBackgroundColor(ds.getValue(Integer.class));
+                    }
+                    if (ds.getKey().equals("vibrant")) {
+                        fab.setBackgroundTintList(ColorStateList.valueOf(ds.getValue(Integer.class)));
+                        break;
+                    }
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
     }
 
     @Override

@@ -52,7 +52,8 @@
 
     <style name="ListTheme" parent="AppTheme.NoActionBar">
         <item name="android:windowLightStatusBar">false</item>
-        <item name="android:statusBarColor">@color/softPurple</item>
+        <item name="android:windowDrawsSystemBarBackgrounds">true</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
     </style>
 
 </resources>
