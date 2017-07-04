@@ -39,6 +39,7 @@
         <item name="android:windowSharedElementExitTransition">
             @transition/change_image_transform
         </item>
+        <item name="android:colorPrimary">@color/colorOffwhite</item>
         <item name="android:windowEnterTransition">@transition/image_flash</item>
         <item name="android:windowExitTransition">@transition/image_flash</item>
         <item name="android:fitsSystemWindows">true</item>

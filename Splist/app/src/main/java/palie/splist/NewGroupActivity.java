@@ -65,6 +65,7 @@ public class NewGroupActivity extends AppCompatActivity {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
             getSupportActionBar().setHomeButtonEnabled(true);
             getSupportActionBar().setHomeAsUpIndicator(R.drawable.ic_close_black_24dp);
+            getSupportActionBar().setElevation(0);
         }
 
         groupName = (EditText) findViewById(R.id.name);

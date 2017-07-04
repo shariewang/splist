@@ -11,7 +11,9 @@ import android.util.Pair;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.Window;
 import android.widget.ImageView;
+import android.widget.TextView;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -64,6 +66,7 @@ public class MainActivity extends AppCompatActivity implements GroupClickListene
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
             getSupportActionBar().setHomeButtonEnabled(true);
             getSupportActionBar().setHomeAsUpIndicator(R.drawable.ic_person_outline_black_24dp);
+            getSupportActionBar().setElevation(0);
         }
 
         mGroups = new ArrayList<>();
@@ -138,7 +141,9 @@ public class MainActivity extends AppCompatActivity implements GroupClickListene
         i.putExtra("key", key);
         i.putExtra("position", position);
         ActivityOptions options = ActivityOptions
-                .makeSceneTransitionAnimation(this, Pair.create((View)sharedImageView, key));
+                .makeSceneTransitionAnimation(this,
+                        Pair.create((View)sharedImageView, key),
+                        Pair.create(findViewById(android.R.id.statusBarBackground), Window.STATUS_BAR_BACKGROUND_TRANSITION_NAME));
         startActivity(i, options.toBundle());
     }
 }
