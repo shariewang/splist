@@ -5,3 +5,5 @@ Splist is an Android application for shared shopping lists. Ideal for recurring 
 
 ### Design and Prototypes
 Prior to development, I made some high fidelity designs using Adobe Experience Design.
+![image](https://user-images.githubusercontent.com/21299137/27813906-f20f23dc-602d-11e7-9b8f-ee6641132505.png)
+
