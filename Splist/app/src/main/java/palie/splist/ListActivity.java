@@ -18,7 +18,6 @@ import android.support.v7.widget.LinearLayoutCompat;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -26,7 +25,6 @@ import android.view.Window;
 import android.widget.EditText;
 
 import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
@@ -42,24 +40,24 @@ import com.vansuita.pickimage.dialog.PickImageDialog;
 import com.vansuita.pickimage.enums.EPickType;
 import com.vansuita.pickimage.listeners.IPickResult;
 
-import java.io.BufferedReader;
+import org.xml.sax.SAXException;
+import org.xml.sax.helpers.DefaultHandler;
+
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.InputStreamReader;
-import java.io.Reader;
-import java.net.URL;
-import java.text.SimpleDateFormat;
+import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Date;
+
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
 
 import palie.splist.listeners.MyItemListener;
 import palie.splist.model.Item;
 import palie.splist.model.MemberList;
 import palie.splist.ocr.AsyncProcessTask;
-import palie.splist.ocr.Client;
-import palie.splist.ocr.ReceiptSettings;
-import palie.splist.ocr.ResultsActivity;
+import palie.splist.ocr.ReceiptHandler;
 import palie.splist.rvutils.MemberAdapter;
 import palie.splist.rvutils.MyItemAdapter;
 
@@ -364,10 +362,41 @@ public class ListActivity extends AppCompatActivity implements MyItemListener {
         //Remove output file
         deleteFile(resultUrl);
 
-        Intent results = new Intent( this, ResultsActivity.class);
-        results.putExtra("IMAGE_PATH", imageFilePath);
-        results.putExtra("RESULT_PATH", resultUrl);
-        startActivity(results);
+        // Starting recognition process
+        new AsyncProcessTask(this).execute(imageFilePath, resultUrl);
+    }
+
+    public void updateResults(Boolean success) {
+        if (!success)
+            return;
+        try {
+            FileInputStream fis = openFileInput(resultUrl);
+            readXML(fis);
+//            try {
+//                Reader reader = new InputStreamReader(fis, "UTF-8");
+//                BufferedReader bufReader = new BufferedReader(reader);
+//                String text = null;
+//                while ((text = bufReader.readLine()) != null) {
+//                    contents.append(text).append(System.getProperty("line.separator"));
+//                }
+//            } finally {
+//                fis.close();
+//            }
+            fis.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void readXML(FileInputStream fis) {
+        SAXParserFactory factory = SAXParserFactory.newInstance();
+        try {
+            SAXParser parser = factory.newSAXParser();
+            DefaultHandler handler = new ReceiptHandler();
+            parser.parse(fis, handler);
+        } catch (ParserConfigurationException | SAXException | IOException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override

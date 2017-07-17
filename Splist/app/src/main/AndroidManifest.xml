@@ -62,7 +62,6 @@
             </intent-filter>
         </service>
 
-        <activity android:name=".ocr.ResultsActivity"></activity>
     </application>
 
 </manifest>

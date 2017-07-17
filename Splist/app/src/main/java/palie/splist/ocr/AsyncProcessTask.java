@@ -2,20 +2,22 @@ package palie.splist.ocr;
 
 import java.io.FileOutputStream;
 
-import android.app.*;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.os.AsyncTask;
 
+import palie.splist.ListActivity;
+
 public class AsyncProcessTask extends AsyncTask<String, String, Boolean> {
 
-    public AsyncProcessTask(ResultsActivity activity) {
+    public AsyncProcessTask(ListActivity activity) {
         this.activity = activity;
         dialog = new ProgressDialog(activity);
     }
 
     private ProgressDialog dialog;
     /** application context. */
-    private final ResultsActivity activity;
+    private final ListActivity activity;
 
     protected void onPreExecute() {
         dialog.setMessage("Processing");
@@ -93,8 +95,6 @@ public class AsyncProcessTask extends AsyncTask<String, String, Boolean> {
             return true;
         } catch (Exception e) {
             final String message = "Error: " + e.getMessage();
-            publishProgress( message);
-            activity.displayMessage(message);
             return false;
         }
     }
