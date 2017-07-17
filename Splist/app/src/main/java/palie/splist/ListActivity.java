@@ -1,10 +1,14 @@
 package palie.splist;
 
+import android.content.Intent;
 import android.content.res.ColorStateList;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
+import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.design.widget.AppBarLayout;
 import android.support.design.widget.FloatingActionButton;
@@ -13,6 +17,7 @@ import android.support.v7.widget.LinearLayoutCompat;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -20,6 +25,7 @@ import android.view.Window;
 import android.widget.EditText;
 
 import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
@@ -35,12 +41,23 @@ import com.vansuita.pickimage.dialog.PickImageDialog;
 import com.vansuita.pickimage.enums.EPickType;
 import com.vansuita.pickimage.listeners.IPickResult;
 
+import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.net.URL;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 
 import palie.splist.listeners.MyItemListener;
 import palie.splist.model.Item;
 import palie.splist.model.MemberList;
+import palie.splist.ocr.AsyncProcessTask;
+import palie.splist.ocr.Client;
+import palie.splist.ocr.ReceiptSettings;
 import palie.splist.rvutils.MemberAdapter;
 import palie.splist.rvutils.MyItemAdapter;
 
@@ -57,6 +74,11 @@ public class ListActivity extends AppCompatActivity implements MyItemListener {
     private FloatingActionButton fab;
     private static final int SHOPPING = 1;
     private static final int ONGOING = 2;
+    static final int REQUEST_IMAGE_CAPTURE = 0;
+    public static final int MEDIA_TYPE_IMAGE = 3;
+    public static final int MEDIA_TYPE_VIDEO = 4;
+    private String resultUrl = "result.txt";
+
 
     // TODO: 6/23/2017 remove all listeners from classes onDetach except notification one.
 
@@ -152,6 +174,7 @@ public class ListActivity extends AppCompatActivity implements MyItemListener {
                 //initial click
                 db.getReference("Lists").child(listKey).child("status").setValue(SHOPPING);
                 //second click to upload receipt.
+                takePictureIntent();
             }
         });
 
@@ -296,10 +319,82 @@ public class ListActivity extends AppCompatActivity implements MyItemListener {
         });
     }
 
+    private void takePictureIntent() {
+        Intent i = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+        Uri fileUri = getOutputMediaFileUri();
+        i.putExtra(MediaStore.EXTRA_OUTPUT, fileUri);
+        if (i.resolveActivity(getPackageManager()) != null) {
+            startActivityForResult(i, REQUEST_IMAGE_CAPTURE);
+        }
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == REQUEST_IMAGE_CAPTURE && resultCode == RESULT_OK) {
+            String imageFilePath = getOutputMediaFileUri().getPath();
+            deleteFile(resultUrl);
+            //new AsyncProcessTask(ListActivity.this).execute(imageFilePath, resultUrl);
+        }
+    }
+
     @Override
     protected void onDestroy() {
         super.onDestroy();
         db.getReference("Lists").child(listKey).child("items").removeEventListener(listCL);
     }
+
+    /** Create a file Uri for saving an image or video */
+    private static Uri getOutputMediaFileUri(){
+        return Uri.fromFile(getOutputMediaFile());
+    }
+
+    /** Create a File for saving an image or video */
+    private static File getOutputMediaFile(){
+        // To be safe, you should check that the SDCard is mounted
+        // using Environment.getExternalStorageState() before doing this.
+
+        File mediaStorageDir = new File(Environment.getExternalStoragePublicDirectory(
+                Environment.DIRECTORY_PICTURES), "MyCameraApp");
+        // This location works best if you want the created images to be shared
+        // between applications and persist after your app has been uninstalled.
+
+        // Create the storage directory if it does not exist
+        if (! mediaStorageDir.exists()){
+            if (! mediaStorageDir.mkdirs()){
+                Log.d("MyCameraApp", "failed to create directory");
+                return null;
+            }
+        }
+
+        // Create a media file name
+        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+        return new File(mediaStorageDir.getPath() + File.separator +
+                "IMG_"+ timeStamp + ".jpg");
+    }
+
+    public void updateResults(Boolean success) {
+        if (!success)
+            return;
+        try {
+            StringBuffer contents = new StringBuffer();
+
+            FileInputStream fis = openFileInput(resultUrl);
+            try {
+                Reader reader = new InputStreamReader(fis, "UTF-8");
+                BufferedReader bufReader = new BufferedReader(reader);
+                String text = null;
+                while ((text = bufReader.readLine()) != null) {
+                    contents.append(text).append(System.getProperty("line.separator"));
+                }
+            } finally {
+                fis.close();
+            }
+
+            System.out.println(contents.toString());
+        } catch (Exception e) {
+        }
+    }
+
+
 
 }
