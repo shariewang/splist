@@ -1,5 +1,6 @@
 package palie.splist;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.content.res.ColorStateList;
 import android.graphics.Bitmap;
@@ -58,6 +59,7 @@ import palie.splist.model.MemberList;
 import palie.splist.ocr.AsyncProcessTask;
 import palie.splist.ocr.Client;
 import palie.splist.ocr.ReceiptSettings;
+import palie.splist.ocr.ResultsActivity;
 import palie.splist.rvutils.MemberAdapter;
 import palie.splist.rvutils.MyItemAdapter;
 
@@ -74,9 +76,6 @@ public class ListActivity extends AppCompatActivity implements MyItemListener {
     private FloatingActionButton fab;
     private static final int SHOPPING = 1;
     private static final int ONGOING = 2;
-    static final int REQUEST_IMAGE_CAPTURE = 0;
-    public static final int MEDIA_TYPE_IMAGE = 3;
-    public static final int MEDIA_TYPE_VIDEO = 4;
     private String resultUrl = "result.txt";
 
 
@@ -174,7 +173,7 @@ public class ListActivity extends AppCompatActivity implements MyItemListener {
                 //initial click
                 db.getReference("Lists").child(listKey).child("status").setValue(SHOPPING);
                 //second click to upload receipt.
-                takePictureIntent();
+                captureImageFromCamera();
             }
         });
 
@@ -319,31 +318,6 @@ public class ListActivity extends AppCompatActivity implements MyItemListener {
         });
     }
 
-    private void takePictureIntent() {
-        Intent i = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-        Uri fileUri = getOutputMediaFileUri();
-        i.putExtra(MediaStore.EXTRA_OUTPUT, fileUri);
-        if (i.resolveActivity(getPackageManager()) != null) {
-            startActivityForResult(i, REQUEST_IMAGE_CAPTURE);
-        }
-    }
-
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (requestCode == REQUEST_IMAGE_CAPTURE && resultCode == RESULT_OK) {
-            String imageFilePath = getOutputMediaFileUri().getPath();
-            deleteFile(resultUrl);
-            //new AsyncProcessTask(ListActivity.this).execute(imageFilePath, resultUrl);
-        }
-    }
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        db.getReference("Lists").child(listKey).child("items").removeEventListener(listCL);
-    }
-
-    /** Create a file Uri for saving an image or video */
     private static Uri getOutputMediaFileUri(){
         return Uri.fromFile(getOutputMediaFile());
     }
@@ -354,47 +328,51 @@ public class ListActivity extends AppCompatActivity implements MyItemListener {
         // using Environment.getExternalStorageState() before doing this.
 
         File mediaStorageDir = new File(Environment.getExternalStoragePublicDirectory(
-                Environment.DIRECTORY_PICTURES), "MyCameraApp");
+                Environment.DIRECTORY_PICTURES), "ABBYY Cloud OCR SDK Demo App");
         // This location works best if you want the created images to be shared
         // between applications and persist after your app has been uninstalled.
 
         // Create the storage directory if it does not exist
         if (! mediaStorageDir.exists()){
             if (! mediaStorageDir.mkdirs()){
-                Log.d("MyCameraApp", "failed to create directory");
                 return null;
             }
         }
 
         // Create a media file name
-        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
-        return new File(mediaStorageDir.getPath() + File.separator +
-                "IMG_"+ timeStamp + ".jpg");
+        File mediaFile = new File(mediaStorageDir.getPath() + File.separator + "image.jpg" );
+
+        return mediaFile;
     }
 
-    public void updateResults(Boolean success) {
-        if (!success)
+    public void captureImageFromCamera() {
+        Intent intent = new Intent("android.media.action.IMAGE_CAPTURE");
+        Uri fileUri = getOutputMediaFileUri(); // create a file to save the image
+        intent.putExtra(MediaStore.EXTRA_OUTPUT, fileUri); // set the image file name
+
+        startActivityForResult(intent, 0);
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (resultCode != Activity.RESULT_OK)
             return;
-        try {
-            StringBuffer contents = new StringBuffer();
 
-            FileInputStream fis = openFileInput(resultUrl);
-            try {
-                Reader reader = new InputStreamReader(fis, "UTF-8");
-                BufferedReader bufReader = new BufferedReader(reader);
-                String text = null;
-                while ((text = bufReader.readLine()) != null) {
-                    contents.append(text).append(System.getProperty("line.separator"));
-                }
-            } finally {
-                fis.close();
-            }
+        String imageFilePath = getOutputMediaFileUri().getPath();
 
-            System.out.println(contents.toString());
-        } catch (Exception e) {
-        }
+        //Remove output file
+        deleteFile(resultUrl);
+
+        Intent results = new Intent( this, ResultsActivity.class);
+        results.putExtra("IMAGE_PATH", imageFilePath);
+        results.putExtra("RESULT_PATH", resultUrl);
+        startActivity(results);
     }
 
-
-
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        db.getReference("Lists").child(listKey).child("items").removeEventListener(listCL);
+    }
 }
