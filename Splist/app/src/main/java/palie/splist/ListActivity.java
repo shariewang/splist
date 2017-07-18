@@ -1,6 +1,7 @@
 package palie.splist;
 
 import android.app.Activity;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.ColorStateList;
 import android.graphics.Bitmap;
@@ -23,8 +24,8 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.EditText;
-import android.widget.TextView;
 
+import com.firebase.ui.database.FirebaseRecyclerAdapter;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.ChildEventListener;
@@ -32,6 +33,7 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.GenericTypeIndicator;
 import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.UploadTask;
@@ -64,6 +66,9 @@ import palie.splist.ocr.ReceiptHandler;
 import palie.splist.rvutils.MemberAdapter;
 import palie.splist.rvutils.MyItemAdapter;
 
+import palie.splist.model.ReceiptItem;
+import palie.splist.rvutils.ReceiptHolder;
+
 public class ListActivity extends AppCompatActivity implements MyItemListener {
 
     private final FirebaseDatabase db = FirebaseDatabase.getInstance();
@@ -80,7 +85,6 @@ public class ListActivity extends AppCompatActivity implements MyItemListener {
     private static final int ONGOING = 2;
     private static final int DONE = 3;
     private String resultUrl = "result.txt";
-
 
     // TODO: 6/23/2017 remove all listeners from classes onDetach except notification one.
 
@@ -392,12 +396,54 @@ public class ListActivity extends AppCompatActivity implements MyItemListener {
     }
 
     private void loadFinishedReceipt() {
-        AlertDialog.Builder builder = new AlertDialog.Builder(ListActivity.this);
-        View view = getLayoutInflater().inflate(R.layout.receipt, null);
-        TextView subtotal = (TextView) view.findViewById(R.id.subtotal);
-        TextView tax = (TextView) view.findViewById(R.id.tax);
-        TextView total = (TextView) view.findViewById(R.id.total);
+        final AlertDialog.Builder builder = new AlertDialog.Builder(ListActivity.this);
+        final View view = getLayoutInflater().inflate(R.layout.receipt, null);
+        final EditText subtotal = (EditText) view.findViewById(R.id.subtotal);
+        final EditText tax = (EditText) view.findViewById(R.id.tax);
+        final EditText total = (EditText) view.findViewById(R.id.total);
 
+        db.getReference("Receipts").child(listKey).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                for (DataSnapshot ds : dataSnapshot.getChildren()) {
+                    if (ds.getKey().equals("subtotal")) {
+                        subtotal.setText(ds.getValue(String.class));
+                    }  else if (ds.getKey().equals("tax")) {
+                        tax.setText(ds.getValue(String.class));
+                    } else if (ds.getKey().equals("total")) {
+                        total.setText(ds.getValue(String.class));
+                    } else if (ds.getKey().equals("vendor")) {
+                        builder.setTitle(ds.getValue(String.class));
+                    }
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+        RecyclerView itemRV = (RecyclerView) view.findViewById(R.id.receiptitems);
+        itemRV.setLayoutManager(new LinearLayoutManager(ListActivity.this));
+        DatabaseReference ref = db.getReference("Receipts").child(listKey).child("items");
+        final FirebaseRecyclerAdapter<ReceiptItem, ReceiptHolder> adapter = new FirebaseRecyclerAdapter<ReceiptItem, ReceiptHolder>(ReceiptItem.class,
+                R.layout.receipt_item, ReceiptHolder.class, ref) {
+            @Override
+            protected void populateViewHolder(ReceiptHolder receiptHolder, ReceiptItem receiptItem, int i) {
+                receiptHolder.setName(receiptItem.getName());
+                receiptHolder.setPrice(receiptItem.getAmount());
+            }
+        };
+        itemRV.setAdapter(adapter);
+        builder.setView(view)
+                .setMessage("Tap to edit values.")
+                .setPositiveButton("SAVE", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        adapter.cleanup();
+                    }
+                })
+                .show();
     }
 
     public void readXML(FileInputStream fis) {

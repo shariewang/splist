@@ -9,6 +9,8 @@ import org.xml.sax.helpers.DefaultHandler;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+import palie.splist.model.ReceiptItem;
+
 public class ReceiptHandler extends DefaultHandler {
 
     private static final FirebaseDatabase DB = FirebaseDatabase.getInstance();
@@ -129,16 +131,6 @@ public class ReceiptHandler extends DefaultHandler {
             System.out.println("subtotal: " + s);
             data.put("subtotal", s);
             DB.getReference("Receipts").child(listKey).child("subtotal").setValue(s);
-        }
-    }
-
-    private class ReceiptItem {
-
-        String name, amount;
-
-        ReceiptItem(String name, String amount) {
-            this.name = name;
-            this.amount = amount;
         }
     }
 }

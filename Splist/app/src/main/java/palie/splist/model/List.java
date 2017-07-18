@@ -1,6 +1,6 @@
 package palie.splist.model;
 
-public class List {
+public class List<R> {
 
     private String key, name, type, buyer;
     private int status;

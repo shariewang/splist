@@ -168,7 +168,7 @@ public class GroupActivity extends AppCompatActivity {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
                         key = db.getReference("Lists").push().getKey();
-                        db.getReference("Lists").child(key).setValue(new List(key, name.getText().toString(), spinner.getSelectedItem().toString(), 0));
+                        db.getReference("Lists").child(key).setValue(new List<R>(key, name.getText().toString(), spinner.getSelectedItem().toString(), 0));
                         db.getReference("Groups").child(groupKey).child("active").child(key).setValue(key);
                         //add listener here.
                         db.getReference("Lists").child(key).child("status").addValueEventListener(new ValueEventListener() {
