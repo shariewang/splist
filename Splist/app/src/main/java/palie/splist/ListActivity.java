@@ -316,7 +316,7 @@ public class ListActivity extends AppCompatActivity implements MyItemListener {
         });
     }
 
-    private static Uri getOutputMediaFileUri(){
+    private static Uri getOutputMediaFileUri() {
         return Uri.fromFile(getOutputMediaFile());
     }
 

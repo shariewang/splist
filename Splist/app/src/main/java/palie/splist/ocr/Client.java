@@ -1,7 +1,17 @@
 package palie.splist.ocr;
 
-import java.io.*;
-import java.net.*;
+import java.io.BufferedInputStream;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.net.URLConnection;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -10,11 +20,6 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
-
-import palie.splist.ocr.Base64;
-import palie.splist.ocr.ProcessingSettings;
-import palie.splist.ocr.ReceiptSettings;
-import palie.splist.ocr.Task;
 
 public class Client {
 
@@ -75,7 +80,6 @@ public class Client {
 
     private HttpURLConnection openGetConnection(URL url) throws Exception {
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-        // connection.setRequestMethod("GET");
         setupAuthorization(connection);
         return connection;
     }

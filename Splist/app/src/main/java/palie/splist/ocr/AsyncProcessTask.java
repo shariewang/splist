@@ -30,7 +30,6 @@ public class AsyncProcessTask extends AsyncTask<String, String, Boolean> {
         if (dialog.isShowing()) {
             dialog.dismiss();
         }
-
         activity.updateResults(result);
     }
 
@@ -46,20 +45,9 @@ public class AsyncProcessTask extends AsyncTask<String, String, Boolean> {
             // You should get e-mail from ABBYY Cloud OCR SDK service with the application password
             restClient.password = "xk9/xinj+q6UpZwv65koWgbt";
 
-            publishProgress( "Uploading image...");
-
-            String language = "English"; // Comma-separated list: Japanese,English or German,French,Spanish etc.
-
-            ReceiptSettings receiptSettings = new ReceiptSettings();
-
-//
-//            ProcessingSettings processingSettings = new ProcessingSettings();
-//            processingSettings.setOutputFormat( ProcessingSettings.OutputFormat.txt );
-//            processingSettings.setLanguage(language);
-
             publishProgress("Uploading..");
 
-            Task task = restClient.processReceipt(inputFile, receiptSettings);
+            Task task = restClient.processReceipt(inputFile, new ReceiptSettings());
 
             while( task.isTaskActive() ) {
                 // Note: it's recommended that your application waits

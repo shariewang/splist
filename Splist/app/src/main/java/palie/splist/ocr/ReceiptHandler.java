@@ -21,30 +21,35 @@ public class ReceiptHandler extends DefaultHandler {
 
     @Override
     public void startElement(String uri, String localName, String qName, Attributes attributes) {
-        if (qName.equals("vendor")) {
-            vendor = true;
-        } else if (qName.equals("name")) {
-            name = true;
-        } else if (qName.equals("text")) {
-            text = true;
-        } else if (qName.equals("recognizedItems")) {
-            items = true;
-        } else if (qName.equals("name")) {
-            name = true;
-        } else if (qName.equals("total")) {
-            total = true;
-        } else if (qName.equals("tax")) {
-            tax = true;
-            String rate = attributes.getValue("rate");
-            if (rate != null) {
-                data.put("taxrate", rate);
-            }
-        } else if (qName.equals("total")) {
-            total = true;
-        } else if (qName.equals("subTotal")) {
-            subtotal = true;
-        } else if (qName.equals("normalizedValue")) {
-            normalize = true;
+        switch (qName) {
+            case "vendor":
+                vendor = true;
+                break;
+            case "name":
+                name = true;
+                break;
+            case "text":
+                text = true;
+                break;
+            case "recognizedItems":
+                items = true;
+                break;
+            case "tax":
+                tax = true;
+                String rate = attributes.getValue("rate");
+                if (rate != null) {
+                    data.put("taxrate", rate);
+                }
+                break;
+            case "total":
+                total = true;
+                break;
+            case "subTotal":
+                subtotal = true;
+                break;
+            case "normalizedValue":
+                normalize = true;
+                break;
         }
     }
 
@@ -82,6 +87,7 @@ public class ReceiptHandler extends DefaultHandler {
                 break;
             case "recognizedItems":
                 items = false;
+                break;
         }
     }
 
@@ -90,7 +96,7 @@ public class ReceiptHandler extends DefaultHandler {
                            int start, int length) throws SAXException {
         if (vendor && name && text) {
             String s = new String(ch, start, length);
-            System.out.println("vendor name: "+ s);
+            System.out.println("vendor name: " + s);
             data.put("name", s);
         } else if (items && name && text) {
             String s = new String(ch, start, length);
@@ -112,6 +118,7 @@ public class ReceiptHandler extends DefaultHandler {
             String s = new String(ch, start, length);
             System.out.println("subtotal: " + s);
             data.put("subtotal", s);
+            name = text = false;
         }
     }
 
@@ -124,6 +131,4 @@ public class ReceiptHandler extends DefaultHandler {
             this.amount = amount;
         }
     }
-
-
 }
