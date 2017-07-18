@@ -13,6 +13,7 @@ import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.design.widget.AppBarLayout;
 import android.support.design.widget.FloatingActionButton;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutCompat;
 import android.support.v7.widget.LinearLayoutManager;
@@ -21,8 +22,8 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.Window;
 import android.widget.EditText;
+import android.widget.TextView;
 
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.firebase.auth.FirebaseAuth;
@@ -48,6 +49,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.concurrent.TimeUnit;
 
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
@@ -55,6 +57,7 @@ import javax.xml.parsers.SAXParserFactory;
 
 import palie.splist.listeners.MyItemListener;
 import palie.splist.model.Item;
+import palie.splist.model.List;
 import palie.splist.model.MemberList;
 import palie.splist.ocr.AsyncProcessTask;
 import palie.splist.ocr.ReceiptHandler;
@@ -72,8 +75,10 @@ public class ListActivity extends AppCompatActivity implements MyItemListener {
     private ChildEventListener listCL;
     private AppBarLayout appbar;
     private FloatingActionButton fab;
-    private static final int SHOPPING = 1;
+    private static final int PRE = 0;
+    private static final int READY = 1;
     private static final int ONGOING = 2;
+    private static final int DONE = 3;
     private String resultUrl = "result.txt";
 
 
@@ -84,22 +89,18 @@ public class ListActivity extends AppCompatActivity implements MyItemListener {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_list);
 
-        Window w = getWindow();
         getWindow().getDecorView().setSystemUiVisibility(
                 View.SYSTEM_UI_FLAG_LAYOUT_STABLE | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN);
-
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         toolbar.setTitle(getIntent().getStringExtra("name"));
         toolbar.setTitleTextColor(Color.WHITE);
         setSupportActionBar(toolbar);
-
         appbar = (AppBarLayout) findViewById(R.id.app_bar);
+        setAppBarColor();
 
         uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
         groupKey = getIntent().getStringExtra("groupkey");
         listKey = getIntent().getStringExtra("listkey");
-
-        setAppBarColor();
 
         myItems = new ArrayList<>();
         RecyclerView items = (RecyclerView) findViewById(R.id.mylist);
@@ -115,7 +116,6 @@ public class ListActivity extends AppCompatActivity implements MyItemListener {
                 for (DataSnapshot d : dataSnapshot.getChildren()) {
                     Item i = d.getValue(Item.class);
                     myItems.add(i);
-                    System.out.println("reading:"+i.getImageKey());
                 }
                 myItems.add(new Item());
                 myItemAdapter.notifyDataSetChanged();
@@ -164,27 +164,48 @@ public class ListActivity extends AppCompatActivity implements MyItemListener {
         members.setLayoutManager(new LinearLayoutManager(this));
         members.setAdapter(new MemberAdapter(memberList, getApplicationContext(), this));
 
+        db.getReference("Lists").child(listKey).child("status").setValue(PRE);
         fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                //initial click
-                db.getReference("Lists").child(listKey).child("status").setValue(SHOPPING);
-                //second click to upload receipt.
-                captureImageFromCamera();
+                //initial click to prepare to go shopping.
+                db.getReference("Lists").child(listKey).child("status").addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(DataSnapshot dataSnapshot) {
+                        int code = dataSnapshot.getValue(Integer.class);
+                        if (code == PRE) {
+                            db.getReference("Lists").child(listKey).child("status").setValue(READY);
+                            try {
+                                TimeUnit.MINUTES.sleep(5);
+                                db.getReference("Lists").child(listKey).child("status").setValue(ONGOING);
+                            } catch (InterruptedException e) {
+                                db.getReference("Lists").child(listKey).child("status").setValue(ONGOING);
+                            }
+                        } else if (code == ONGOING) {
+                            db.getReference("Lists").child(listKey).child("status").setValue(DONE);
+                            captureImageFromCamera();
+                        }
+                    }
+
+                    @Override
+                    public void onCancelled(DatabaseError databaseError) {
+
+                    }
+                });
             }
         });
 
-        //disable fab and my checklist after disabled status code
+        //disable fab and non-buyer checklists after disabled status code
         db.getReference("Lists").child(listKey).addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 String buyerUid = "";
                 for (DataSnapshot ds : dataSnapshot.getChildren()) {
-                    if (dataSnapshot.getKey().equals("buyerUid")) {
+                    if (ds.getKey().equals("buyerUid")) {
                         buyerUid = dataSnapshot.getValue(String.class);
                     }
-                    if (dataSnapshot.getKey().equals("status")) {
+                    if (ds.getKey().equals("status")) {
                         int code = dataSnapshot.getValue(Integer.class);
                         if (code == ONGOING && !uid.equals(buyerUid)) {
                             for (int i = 0; i < myItemAdapter.getItemCount() - 1; i++) {
@@ -322,9 +343,6 @@ public class ListActivity extends AppCompatActivity implements MyItemListener {
 
     /** Create a File for saving an image or video */
     private static File getOutputMediaFile(){
-        // To be safe, you should check that the SDCard is mounted
-        // using Environment.getExternalStorageState() before doing this.
-
         File mediaStorageDir = new File(Environment.getExternalStoragePublicDirectory(
                 Environment.DIRECTORY_PICTURES), "ABBYY Cloud OCR SDK Demo App");
         // This location works best if you want the created images to be shared
@@ -336,11 +354,7 @@ public class ListActivity extends AppCompatActivity implements MyItemListener {
                 return null;
             }
         }
-
-        // Create a media file name
-        File mediaFile = new File(mediaStorageDir.getPath() + File.separator + "image.jpg" );
-
-        return mediaFile;
+        return new File(mediaStorageDir.getPath() + File.separator + "image.jpg" );
     }
 
     public void captureImageFromCamera() {
@@ -357,13 +371,11 @@ public class ListActivity extends AppCompatActivity implements MyItemListener {
         if (resultCode != Activity.RESULT_OK)
             return;
 
-        String imageFilePath = getOutputMediaFileUri().getPath();
-
         //Remove output file
         deleteFile(resultUrl);
 
         // Starting recognition process
-        new AsyncProcessTask(this).execute(imageFilePath, resultUrl);
+        new AsyncProcessTask(this).execute(getOutputMediaFileUri().getPath(), resultUrl);
     }
 
     public void updateResults(Boolean success) {
@@ -372,27 +384,27 @@ public class ListActivity extends AppCompatActivity implements MyItemListener {
         try {
             FileInputStream fis = openFileInput(resultUrl);
             readXML(fis);
-//            try {
-//                Reader reader = new InputStreamReader(fis, "UTF-8");
-//                BufferedReader bufReader = new BufferedReader(reader);
-//                String text = null;
-//                while ((text = bufReader.readLine()) != null) {
-//                    contents.append(text).append(System.getProperty("line.separator"));
-//                }
-//            } finally {
-//                fis.close();
-//            }
             fis.close();
         } catch (Exception e) {
             e.printStackTrace();
         }
+        loadFinishedReceipt();
+    }
+
+    private void loadFinishedReceipt() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(ListActivity.this);
+        View view = getLayoutInflater().inflate(R.layout.receipt, null);
+        TextView subtotal = (TextView) view.findViewById(R.id.subtotal);
+        TextView tax = (TextView) view.findViewById(R.id.tax);
+        TextView total = (TextView) view.findViewById(R.id.total);
+
     }
 
     public void readXML(FileInputStream fis) {
         SAXParserFactory factory = SAXParserFactory.newInstance();
         try {
             SAXParser parser = factory.newSAXParser();
-            DefaultHandler handler = new ReceiptHandler();
+            DefaultHandler handler = new ReceiptHandler(listKey);
             parser.parse(fis, handler);
         } catch (ParserConfigurationException | SAXException | IOException e) {
             e.printStackTrace();

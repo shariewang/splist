@@ -1,5 +1,7 @@
 package palie.splist.ocr;
 
+import com.google.firebase.database.FirebaseDatabase;
+
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
@@ -9,12 +11,14 @@ import java.util.HashMap;
 
 public class ReceiptHandler extends DefaultHandler {
 
+    private static final FirebaseDatabase DB = FirebaseDatabase.getInstance();
     private HashMap<String, String> data;
     private ArrayList<ReceiptItem> itemList;
-    private String itemName, itemAmount;
+    private String itemName, itemAmount, listKey;
     private boolean vendor, name, items, text, normalize, total, subtotal, tax;
 
-    public ReceiptHandler() {
+    public ReceiptHandler(String listKey) {
+        this.listKey = listKey;
         data = new HashMap<>();
         itemList = new ArrayList<>();
     }
@@ -88,6 +92,9 @@ public class ReceiptHandler extends DefaultHandler {
             case "recognizedItems":
                 items = false;
                 break;
+            case "receipt":
+                DB.getReference("Receipts").child(listKey).child("items").setValue(itemList);
+                break;
         }
     }
 
@@ -98,6 +105,7 @@ public class ReceiptHandler extends DefaultHandler {
             String s = new String(ch, start, length);
             System.out.println("vendor name: " + s);
             data.put("name", s);
+            DB.getReference("Receipts").child(listKey).child("vendor").setValue(s);
         } else if (items && name && text) {
             String s = new String(ch, start, length);
             System.out.println("item name: " + s);
@@ -110,15 +118,17 @@ public class ReceiptHandler extends DefaultHandler {
             String s = new String(ch, start, length);
             System.out.println("tax: " + s);
             data.put("tax", s);
+            DB.getReference("Receipts").child(listKey).child("tax").setValue(s);
         } else if (total && normalize) {
             String s = new String(ch, start, length);
             System.out.println("total: " + s);
             data.put("total", s);
+            DB.getReference("Receipts").child(listKey).child("total").setValue(s);
         } else if (subtotal && normalize) {
             String s = new String(ch, start, length);
             System.out.println("subtotal: " + s);
             data.put("subtotal", s);
-            name = text = false;
+            DB.getReference("Receipts").child(listKey).child("subtotal").setValue(s);
         }
     }
 

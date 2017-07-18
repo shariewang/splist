@@ -55,8 +55,7 @@ public class Base64 {
      * @returns		The base64 encoded result
      */
 
-    public static String
-    encode(String s) {
+    public static String encode(String s) {
         return encode(s.getBytes());
     }
 
@@ -66,8 +65,7 @@ public class Base64 {
      * @returns		The base64 encoded result
      */
 
-    public static String
-    encode(byte[] src) {
+    public static String encode(byte[] src) {
         return encode(src, 0, src.length);
     }
 
@@ -79,8 +77,7 @@ public class Base64 {
      * @returns		The base64 encoded result
      */
 
-    public static String
-    encode(byte[] src, int start, int length) {
+    public static String encode(byte[] src, int start, int length) {
         byte[] dst = new byte[(length+2)/3 * 4 + length/72];
         int x = 0;
         int dstIndex = 0;
@@ -136,8 +133,7 @@ public class Base64 {
      * @returns		The byte array eith the decoded result
      */
 
-    public static byte[]
-    decode(String s) {
+    public static byte[] decode(String s) {
         int end = 0;	// end state
         if (s.endsWith("=")) {
             end++;
@@ -180,8 +176,7 @@ public class Base64 {
      * Call as <code>Base64 [string]</code>.
      */
 
-    public static void
-    main(String[] args) {
+    public static void main(String[] args) {
         System.out.println("encode: " + args[0]  + " -> ("
                 + encode(args[0]) + ")");
         System.out.println("decode: " + args[0]  + " -> ("
