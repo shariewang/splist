@@ -1,5 +1,3 @@
-<transitionSet xmlns:android="http://schemas.android.com/apk/res/android">
-    <changeBounds />
-    <changeImageTransform />
-    <changeTransform/>
+<transitionSet>
+    <autoTransition/>
 </transitionSet>

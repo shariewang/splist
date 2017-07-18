@@ -39,6 +39,7 @@
         <item name="android:windowSharedElementExitTransition">
             @transition/change_image_transform
         </item>
+        <item name="android:colorPrimary">@color/colorOffwhite</item>
         <item name="android:windowEnterTransition">@transition/image_flash</item>
         <item name="android:windowExitTransition">@transition/image_flash</item>
         <item name="android:fitsSystemWindows">true</item>
@@ -52,7 +53,8 @@
 
     <style name="ListTheme" parent="AppTheme.NoActionBar">
         <item name="android:windowLightStatusBar">false</item>
-        <item name="android:statusBarColor">@color/softPurple</item>
+        <item name="android:windowDrawsSystemBarBackgrounds">true</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
     </style>
 
 </resources>

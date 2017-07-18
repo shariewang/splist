@@ -1,12 +1,18 @@
 package palie.splist;
 
+import android.app.Notification;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.ColorStateList;
+import android.media.RingtoneManager;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.app.NotificationCompat;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
@@ -36,15 +42,18 @@ import palie.splist.rvutils.ListViewHolder;
 
 public class GroupActivity extends AppCompatActivity {
 
-    private String groupKey;
+    private String groupKey, key, buyerName, buyerUid;
     private int position;
     private final FirebaseDatabase db = FirebaseDatabase.getInstance();
+    private static final int SHOPPING = 1;
     private DatabaseReference mGroup;
+    private String uid;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_group);
+
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         toolbar.setTitle("");
         toolbar.setPadding(0, 60, 0, 0);
@@ -62,6 +71,7 @@ public class GroupActivity extends AppCompatActivity {
         final TextView waiting = (TextView) findViewById(R.id.waitingText);
         final FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
 
+        uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
         groupKey = getIntent().getStringExtra("key");
         position = getIntent().getIntExtra("position", 0);
         fab.setOnClickListener(new View.OnClickListener() {
@@ -157,9 +167,25 @@ public class GroupActivity extends AppCompatActivity {
                 .setPositiveButton("CREATE", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
-                        String key = db.getReference("Lists").push().getKey();
-                        db.getReference("Lists").child(key).setValue(new List(key, name.getText().toString(), spinner.getSelectedItem().toString()));
+                        key = db.getReference("Lists").push().getKey();
+                        db.getReference("Lists").child(key).setValue(new List(key, name.getText().toString(), spinner.getSelectedItem().toString(), 0));
                         db.getReference("Groups").child(groupKey).child("active").child(key).setValue(key);
+                        //add listener here.
+                        db.getReference("Lists").child(key).child("status").addValueEventListener(new ValueEventListener() {
+                            @Override
+                            public void onDataChange(DataSnapshot dataSnapshot) {
+                                int status = dataSnapshot.getValue(Integer.class);
+                                if (status == SHOPPING) {
+                                    sendShoppingNotification();
+                                }
+                            }
+
+                            @Override
+                            public void onCancelled(DatabaseError databaseError) {
+
+                            }
+                        });
+
                         dialogInterface.dismiss();
                     }
                 })
@@ -180,7 +206,6 @@ public class GroupActivity extends AppCompatActivity {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        String uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
         switch (item.getItemId()) {
             case R.id.action_add_members:
                 return true;
@@ -194,7 +219,7 @@ public class GroupActivity extends AppCompatActivity {
                 db.getReference("Users").child(uid).child(groupKey).removeValue();
                 MainActivity.mGroups.remove(position);
                 MainActivity.groupAdapter.notifyItemRemoved(position);
-                MainActivity.groupAdapter.notifyItemRangeRemoved(position, MainActivity.groupAdapter.getItemCount());
+                MainActivity.groupAdapter.notifyItemRangeChanged(position, MainActivity.groupAdapter.getItemCount());
                 finish();
                 return true;
             default:
@@ -243,6 +268,47 @@ public class GroupActivity extends AppCompatActivity {
             }
         };
         return adapter;
+    }
+
+    private void sendShoppingNotification() {
+        db.getReference("Lists").child(key).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                for (DataSnapshot ds : dataSnapshot.getChildren()) {
+                    if (ds.getKey().equals("buyer")) {
+                        buyerName = ds.getValue(String.class);
+                    }
+                    if (ds.getKey().equals("buyerUid")) {
+                        buyerUid = ds.getValue(String.class);
+                        break;
+                    }
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+
+        if (!buyerUid.equals(uid)) {
+            NotificationCompat.Builder builder = new NotificationCompat.Builder(GroupActivity.this);
+            Uri alarmSound = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
+
+            Intent resultIntent = new Intent(GroupActivity.this, MainActivity.class);
+            PendingIntent resultPendingIntent = PendingIntent.getActivity(GroupActivity.this, 0, resultIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+
+            builder.setSmallIcon(R.drawable.ic_icon)
+                    .setContentTitle(buyerName + " is going shopping!")
+                    .setContentText("Last chance to add items!")
+                    .setSound(alarmSound)
+                    .setContentIntent(resultPendingIntent)
+                    .setPriority(Notification.PRIORITY_HIGH);
+
+            int notificationId = 001;
+            NotificationManager manager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+            manager.notify(notificationId, builder.build());
+        }
     }
 
     public void onListClick(String key, String name) {

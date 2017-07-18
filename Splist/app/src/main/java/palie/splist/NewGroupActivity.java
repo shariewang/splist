@@ -65,6 +65,7 @@ public class NewGroupActivity extends AppCompatActivity {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
             getSupportActionBar().setHomeButtonEnabled(true);
             getSupportActionBar().setHomeAsUpIndicator(R.drawable.ic_close_black_24dp);
+            getSupportActionBar().setElevation(0);
         }
 
         groupName = (EditText) findViewById(R.id.name);
@@ -144,7 +145,7 @@ public class NewGroupActivity extends AppCompatActivity {
             @Override
             public void onGenerated(Palette palette) {
                 vibrant = palette.getVibrantColor(
-                        palette.getLightVibrantColor(palette.getDarkVibrantColor(Color.BLUE)));
+                        palette.getLightVibrantColor(palette.getDarkVibrantColor(palette.getDominantColor(Color.GRAY))));
                 main = palette.getMutedColor(palette.getLightMutedColor(
                         palette.getDarkMutedColor(palette.getDominantColor(Color.BLUE))));
                 db.getReference("Groups").child(key).setValue(new Group(name, key, emails, names, main, vibrant));
