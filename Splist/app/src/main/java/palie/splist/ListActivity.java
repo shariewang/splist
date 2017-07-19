@@ -99,12 +99,13 @@ public class ListActivity extends AppCompatActivity implements MyItemListener {
         toolbar.setTitle(getIntent().getStringExtra("name"));
         toolbar.setTitleTextColor(Color.WHITE);
         setSupportActionBar(toolbar);
-        appbar = (AppBarLayout) findViewById(R.id.app_bar);
-        setAppBarColor();
 
         uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
         groupKey = getIntent().getStringExtra("groupkey");
         listKey = getIntent().getStringExtra("listkey");
+
+        appbar = (AppBarLayout) findViewById(R.id.app_bar);
+        setAppBarColor();
 
         myItems = new ArrayList<>();
         RecyclerView items = (RecyclerView) findViewById(R.id.mylist);
@@ -179,14 +180,21 @@ public class ListActivity extends AppCompatActivity implements MyItemListener {
                     public void onDataChange(DataSnapshot dataSnapshot) {
                         int code = dataSnapshot.getValue(Integer.class);
                         if (code == PRE) {
-                            db.getReference("Lists").child(listKey).child("status").setValue(READY);
-                            try {
-                                TimeUnit.MINUTES.sleep(5);
-                                db.getReference("Lists").child(listKey).child("status").setValue(ONGOING);
-                            } catch (InterruptedException e) {
-                                db.getReference("Lists").child(listKey).child("status").setValue(ONGOING);
-                            }
-                        } else if (code == ONGOING) {
+                            //db.getReference("Lists").child(listKey).child("status").setValue(READY);
+                            db.getReference("Lists").child(listKey).child("status").setValue(ONGOING);
+                        }
+                    }
+
+                    @Override
+                    public void onCancelled(DatabaseError databaseError) {
+
+                    }
+                });
+                db.getReference("Lists").child(listKey).child("status").addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(DataSnapshot dataSnapshot) {
+                        int code = dataSnapshot.getValue(Integer.class);
+                        if (code == ONGOING) {
                             db.getReference("Lists").child(listKey).child("status").setValue(DONE);
                             captureImageFromCamera();
                         }
@@ -201,37 +209,37 @@ public class ListActivity extends AppCompatActivity implements MyItemListener {
         });
 
         //disable fab and non-buyer checklists after disabled status code
-        db.getReference("Lists").child(listKey).addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                String buyerUid = "";
-                for (DataSnapshot ds : dataSnapshot.getChildren()) {
-                    if (ds.getKey().equals("buyerUid")) {
-                        buyerUid = dataSnapshot.getValue(String.class);
-                    }
-                    if (ds.getKey().equals("status")) {
-                        int code = dataSnapshot.getValue(Integer.class);
-                        if (code == ONGOING && !uid.equals(buyerUid)) {
-                            for (int i = 0; i < myItemAdapter.getItemCount() - 1; i++) {
-                                View v = layoutManager.findViewByPosition(i);
-                                v.findViewById(R.id.itemName).setEnabled(false);
-                            }
-                            int position = myItems.size() - 1;
-                            myItems.remove(position);
-                            myItemAdapter.notifyItemRemoved(position);
-                            fab.setEnabled(false);
-                            //change text color maybe. add locked symbol?
-                        }
-                        break;
-                    }
-                }
-            }
-
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-
-            }
-        });
+//        db.getReference("Lists").child(listKey).addValueEventListener(new ValueEventListener() {
+//            @Override
+//            public void onDataChange(DataSnapshot dataSnapshot) {
+//                String buyerUid = "";
+//                for (DataSnapshot ds : dataSnapshot.getChildren()) {
+//                    if (ds.getKey().equals("buyerUid")) {
+//                        buyerUid = ds.getValue(String.class);
+//                    }
+//                    if (ds.getKey().equals("status")) {
+//                        int code = ds.getValue(Integer.class);
+//                        if (code == ONGOING && !uid.equals(buyerUid)) {
+//                            for (int i = 0; i < myItemAdapter.getItemCount() - 1; i++) {
+//                                View v = layoutManager.findViewByPosition(i);
+//                                v.findViewById(R.id.itemName).setEnabled(false);
+//                            }
+//                            int position = myItems.size() - 1;
+//                            myItems.remove(position);
+//                            myItemAdapter.notifyItemRemoved(position);
+//                            fab.setEnabled(false);
+//                            //change text color maybe. add locked symbol?
+//                        }
+//                        break;
+//                    }
+//                }
+//            }
+//
+//            @Override
+//            public void onCancelled(DatabaseError databaseError) {
+//
+//            }
+//        });
     }
 
     @Override
